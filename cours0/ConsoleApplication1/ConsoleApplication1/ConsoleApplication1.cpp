@@ -58,7 +58,7 @@ int main()
 	StackOverflow(bob);
 	printf("val x : %f\n", bob.x);*/
 
-	Vec3 vecTab[3];
+	/*Vec3 vecTab[3];
 	vecTab[0]= { 1, 2, 3 };
 	vecTab[1]= { 4, 5, 6 };
 	vecTab[2]= { 7, 8, 9 };
@@ -85,9 +85,9 @@ int main()
 
 	const char * ptr = &label2[0];
 	ptr++;
-	printf("%c\n", *ptr);
+	printf("%c\n", *ptr);*/
 
-	auto start = std::chrono::system_clock::now();
+	/*auto start = std::chrono::system_clock::now();
 	int * bigBlock = (int*) malloc(1024 * 1024 * 1024);
 	for (int k = 0; k < 256 * 1024 * 1024; ++k) {
 		bigBlock[k] = 0xdeadbeef;
@@ -95,7 +95,18 @@ int main()
 	printf("beef ? : %x\n", bigBlock[1024 * 1024]);
 	auto end = std::chrono::system_clock::now();
 	auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-	printf("time ? : %d\n", millis);
+	printf("time ? : %d\n", millis);*/
+
+	Vec3 tableau[16];
+	Vec3 *tableau0 = (Vec3*)malloc(sizeof(Vec3) * 16); //C pur
+	memset(tableau, 0, sizeof(Vec3) * 16);
+
+	Vec3 *tableau1 = (Vec3*)malloc(sizeof(Vec3) * 16); //C pur
+
+	Vec3 *tableau2 = new Vec3[16]; //C++
+	Vec3 * unSeulVec = new Vec3(); //allocation Dynamique
+	Vec3 unSeulVecAussiMaisSurLeTas = Vec3(); //allocation Statique
+
 
 	int _i = 0;
 }
