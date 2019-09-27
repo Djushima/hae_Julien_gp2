@@ -29,6 +29,25 @@ Vec3 StackOverflow(Vec3 _in) {
 
 }
 
+int Strlen(const char * src) {
+	int count = 0;
+	while (*src != 0)
+	{
+		count++;
+		*src++;
+	}
+	return count;
+}
+
+void Strcpy(char * dest, const char * src) {
+	while (*src != 0)
+	{
+		*dest = *src;
+		*dest++;
+		*src++;
+	}
+}
+
 int main()
 {
     //std::cout << "Hello World!\n";
@@ -97,7 +116,7 @@ int main()
 	auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 	printf("time ? : %d\n", millis);*/
 
-	Vec3 tableau[16];
+	/*Vec3 tableau[16];
 	Vec3 *tableau0 = (Vec3*)malloc(sizeof(Vec3) * 16); //C pur
 	memset(tableau, 0, sizeof(Vec3) * 16);
 
@@ -105,8 +124,14 @@ int main()
 
 	Vec3 *tableau2 = new Vec3[16]; //C++
 	Vec3 * unSeulVec = new Vec3(); //allocation Dynamique
-	Vec3 unSeulVecAussiMaisSurLeTas = Vec3(); //allocation Statique
+	Vec3 unSeulVecAussiMaisSurLeTas = Vec3(); //allocation Statique */
 
+	const char * source = "mon lapin est dodu";
+	int len = Strlen(source);
+	char * dest = (char*)calloc(1024, sizeof(char));
+	Strcpy(dest, source);
+
+	printf("dest len:%d val:%s \n", Strlen(source), dest);
 
 	int _i = 0;
 }
