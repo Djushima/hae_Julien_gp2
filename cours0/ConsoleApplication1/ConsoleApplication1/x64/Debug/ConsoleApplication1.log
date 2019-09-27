@@ -1,0 +1,13 @@
+﻿  ConsoleApplication1.cpp
+c:\workspace\maindron\hae_julien_gp2\cours0\consoleapplication1\consoleapplication1\consoleapplication1.cpp(65): warning C4477: 'printf' : la chaîne de format '%f' nécessite un argument de type 'double', mais l'argument variadique 1 est de type 'int'
+c:\workspace\maindron\hae_julien_gp2\cours0\consoleapplication1\consoleapplication1\consoleapplication1.cpp(67): warning C4477: 'printf' : la chaîne de format '%f' nécessite un argument de type 'double', mais l'argument variadique 1 est de type 'Vec3'
+c:\workspace\maindron\hae_julien_gp2\cours0\consoleapplication1\consoleapplication1\consoleapplication1.cpp(98): warning C4477: 'printf' : la chaîne de format '%d' nécessite un argument de type 'int', mais l'argument variadique 1 est de type '_Rep'
+          with
+          [
+              _Rep=__int64
+          ]
+  c:\workspace\maindron\hae_julien_gp2\cours0\consoleapplication1\consoleapplication1\consoleapplication1.cpp(98): note: utilisez '%lld' dans la chaîne de format
+  c:\workspace\maindron\hae_julien_gp2\cours0\consoleapplication1\consoleapplication1\consoleapplication1.cpp(98): note: utilisez '%Id' dans la chaîne de format
+  c:\workspace\maindron\hae_julien_gp2\cours0\consoleapplication1\consoleapplication1\consoleapplication1.cpp(98): note: utilisez '%I64d' dans la chaîne de format
+c:\workspace\maindron\hae_julien_gp2\cours0\consoleapplication1\consoleapplication1\consoleapplication1.cpp(30): warning C4717: 'StackOverflow' : récurrent sur tous les chemins d'accès de contrôle, la fonction entraînera un dépassement de capacité de la pile d'exécution
+  ConsoleApplication1.vcxproj -> C:\Workspace\Maindron\hae_Julien_gp2\cours0\ConsoleApplication1\x64\Debug\ConsoleApplication1.exe

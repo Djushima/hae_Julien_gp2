@@ -5,20 +5,28 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
+#include <chrono>
 
 int appel(int s) { /*& ou * = reference ou pointeur, permet d'incrémenter x via s en dehors de la portée*/
 	s++;
 	return 0;
 }
 struct Vec3{
-	float x;
-	float y;
-	float z;
+	int x;
+	int y;
+	int z;
 };
 
 Vec3 incrX(Vec3 _in){
 	_in.x++;
 	return _in;
+}
+
+Vec3 StackOverflow(Vec3 _in) {
+	Vec3 temp = _in;
+	temp.y++;
+	return StackOverflow(temp);
+
 }
 
 int main()
@@ -32,10 +40,10 @@ int main()
 	float v = 0.05f;
 	double ff = 0.5;
 	
-	printf("Hello world: l2: %s\n", label2);
+	//printf("Hello world: l2: %s\n", label2);
 	//printf("Hello world this is a test : %d label : %s %f\n", foo, label, 66.66f);
 	
-	std::string labelcpp = "vachement sympa";
+	/*std::string labelcpp = "vachement sympa";
 	printf("%s\n", labelcpp.c_str());
 
 	int i = 66;
@@ -44,9 +52,52 @@ int main()
 
 	Vec3 toto = { 1,2,3 };
 	incrX(toto);
-	printf("xval: %f\n", toto.x);
+	printf("xval: %f\n", toto.x);*/
 
+	/*Vec3 bob = { 1, 2, 3 };
+	StackOverflow(bob);
+	printf("val x : %f\n", bob.x);*/
 
+	Vec3 vecTab[3];
+	vecTab[0]= { 1, 2, 3 };
+	vecTab[1]= { 4, 5, 6 };
+	vecTab[2]= { 7, 8, 9 };
+	printf("v0x %f\n", vecTab[0].x);
+	//vecTab[0].x++;
+	printf("v0x %f\n", vecTab[0]);
+
+	Vec3 * t0 = 0;
+	Vec3 * t1 = nullptr;
+	Vec3 * t2 = &vecTab[1];
+	(*t2).y = 777;
+	t2->y = 888;
+
+	Vec3* iter = &vecTab[0];
+	int i = 0;
+	for (i = 0; i < 3; i++) {
+		printf("val vec x: %d\n", iter->x);
+		iter++;
+		//iter = iter +1;
+		//iter = (&vecTab[0] + i);
+	}
+	Vec3 * t3 = t2 + 1;
+	t2++;
+
+	const char * ptr = &label2[0];
+	ptr++;
+	printf("%c\n", *ptr);
+
+	auto start = std::chrono::system_clock::now();
+	int * bigBlock = (int*) malloc(1024 * 1024 * 1024);
+	for (int k = 0; k < 256 * 1024 * 1024; ++k) {
+		bigBlock[k] = 0xdeadbeef;
+	}
+	printf("beef ? : %x\n", bigBlock[1024 * 1024]);
+	auto end = std::chrono::system_clock::now();
+	auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	printf("time ? : %d\n", millis);
+
+	int _i = 0;
 }
 
 // Exécuter le programme : Ctrl+F5 ou menu Déboguer > Exécuter sans débogage
