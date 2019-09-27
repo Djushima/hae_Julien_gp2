@@ -3,10 +3,50 @@
 
 #include "pch.h"
 #include <iostream>
+#include <cstdlib>
+#include <cstdio>
+
+int appel(int s) { /*& ou * = reference ou pointeur, permet d'incrémenter x via s en dehors de la portée*/
+	s++;
+	return 0;
+}
+struct Vec3{
+	float x;
+	float y;
+	float z;
+};
+
+Vec3 incrX(Vec3 _in){
+	_in.x++;
+	return _in;
+}
 
 int main()
 {
-    std::cout << "Hello World!\n"; 
+    //std::cout << "Hello World!\n";
+
+	int foo = 0;
+	const char * label = "sapin";
+	const char  label2[6] = { 's', 'a', 'p', 'i', 'n', 0 };
+
+	float v = 0.05f;
+	double ff = 0.5;
+	
+	printf("Hello world: l2: %s\n", label2);
+	//printf("Hello world this is a test : %d label : %s %f\n", foo, label, 66.66f);
+	
+	std::string labelcpp = "vachement sympa";
+	printf("%s\n", labelcpp.c_str());
+
+	int i = 66;
+	i++;
+	appel(i);
+
+	Vec3 toto = { 1,2,3 };
+	incrX(toto);
+	printf("xval: %f\n", toto.x);
+
+
 }
 
 // Exécuter le programme : Ctrl+F5 ou menu Déboguer > Exécuter sans débogage
