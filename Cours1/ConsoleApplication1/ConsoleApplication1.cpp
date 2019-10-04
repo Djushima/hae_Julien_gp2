@@ -204,12 +204,10 @@ int subRec2(int a, int b)
 		return subRec2(a, b - 1) - 1;
 	else
 		return subRec2(a, b + 1) + 1;
-
 }
 
 int mulRec(int a, int b)
 {
-	printf("a: %i, b: %i\n", a, b);
 	if (b == 0 || a == 0) return 0;
 	if (b == 1) return a;
 	if (a == 1) return b;
@@ -218,12 +216,122 @@ int mulRec(int a, int b)
 
 }
 
+int divRec(int a, int b)
+{
+	if (a == 0)				return 0;
+	if (b < 0 && a < 0)		return -divRec(a, b);
+	if (a < 0)				return -divRec(-a, b);
+	if (b < 0)				return -divRec(a, -b);
+	if (a < b)				return 0;
+	return 1 + divRec(a - b, b);
+}
+
+int modRec(int a, int b)
+{
+	return a - mulRec(b, divRec(a, b));
+}
+
+int divModRec1(int a, int b, int *rest)
+{
+	if (a == 0)				return 0;
+	if (b < 0 && a < 0)		return -divRec(a, b);
+	if (a < 0)				return -divRec(-a, b);
+	if (b < 0)				return -divRec(a, -b);
+	if (a < b)
+	{
+		*rest = a;
+		return 0;
+	}
+	return 1 + divModRec1(a - b, b, rest);
+}
+
+int DivModRec2(int a, int b, int *rest)
+{
+	if (a == 0)
+	{
+		*rest = 0;
+		return 0;
+	}
+	if (b < 0 && a < 0)
+	{
+		int subRest = 0;
+		int divRem = DivModRec2( a, b, &subRest);
+		*rest = -subRest;
+		return divRem;
+	}
+	if (a < 0)
+	{
+		int subRest = 0;
+		int divRem = DivModRec2(-a, b, &subRest);
+		*rest = -subRest;
+		return divRem;
+	}
+	if (b < 0)
+	{
+		int subRest = 0;
+		int divRem = DivModRec2(a, -b, &subRest);
+		*rest = -subRest;
+		return divRem;
+	}
+	if (a < b)
+	{
+		*rest = a;
+		return 0;
+	}
+	return 1 + DivModRec2(a - b, b, rest);
+}
+
+int StrlenRec(const char * str)
+{
+	if (*str == 0)
+		return 0;
+	return 1 + StrlenRec(str+1);
+}
+
+void StrCpyRec(char *dest, const char *src)
+{
+	*dest = *src;
+	if (*src == 0) return;
+	else
+	{
+		StrCpyRec(dest + 1, src + 1);
+	}
+}
+
+void ZeroMemory(char * dst, int size)
+{
+	if (size == 0) return;
+	else
+	{
+		*dst = 0;
+		ZeroMemory(dst + 1, size - 1);
+	}
+}
+
 void TestRec() 
 {
+	int reste = 0;
 	int foo = add1(2, 2);
 	int foo2 = addRec(2, 3);
 	int foo3 = addRec2(4, 2);
 	int foo4 = subRec(4, 6);
 	int foo5 = mulRec(-3, 3);
+	int foo6 = divRec(-15, 2);
+	int foo7 = modRec(15, 2);
+	int foo8 = divModRec1(15, 2, &reste);
+	int foo9 = DivModRec2(15, 2, &reste);
+	
+	int len = StrlenRec("Sapin");
+
+	char dst[150];
+	StrCpyRec(dst, "Bonsoir");
+	//printf("%s\n", dst);
+
+	int szBuf = 32;
+	char * buffer = (char *)malloc(szBuf+1);
+	buffer[32] = 'X';
+	ZeroMemory(buffer, szBuf);
+	printf("%c\n", buffer[32]);
+
 	int i = 0;
 }
