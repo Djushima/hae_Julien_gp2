@@ -308,6 +308,37 @@ void ZeroMemory(char * dst, int size)
 	}
 }
 
+void MemCpyRec(char * dst, const char * src, int size)
+{
+	if (size < 0) return;
+	else
+	{
+		*dst = *src;
+		MemCpyRec(dst + 1, src + 1, size - 1);
+	}
+}
+
+int StrcmpRec(char *str0, char * str1)
+{
+	if (*str0 == 0 && *str1 == 0) return 0;
+	if (*str0 == 0) return 1;
+	if (*str1 == 0) return -1;
+	if (*str0 < *str1) return 1;
+	if (*str0 > *str1) return -1;
+	return StrcmpRec(str0 + 1, str1 + 1);
+}
+
+void StrcatRec(char * str0, char * str1)
+{
+	if (*str1 == 0) return;
+	if (*str0 == 0)
+	{
+		*str0 = *str1;
+		return StrcatRec(str0 + 1, str1 + 1);
+	}
+	return StrcatRec(str0 + 1, str1);
+}
+
 void TestRec() 
 {
 	int reste = 0;
@@ -332,6 +363,17 @@ void TestRec()
 	buffer[32] = 'X';
 	ZeroMemory(buffer, szBuf);
 	printf("%c\n", buffer[32]);
+
+	char Bonjour[32] = "bonjour";
+	char Bonsoir[32] = "bonsoir";
+	//MemCpyRec(Bonjour, Bonsoir, strlen(Bonjour)+1);
+	printf("%s\n", Bonjour);
+
+	//int val = StrcmpRec(Bonjour, Bonsoir);
+	//printf("value: %i\n", val);
+
+	StrcatRec(Bonjour, Bonsoir);
+	printf("value: %s\n", Bonjour);
 
 	int i = 0;
 }
