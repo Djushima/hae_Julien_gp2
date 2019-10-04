@@ -20,16 +20,20 @@ void Memcpy2(char * dest, char * src, int size)
 	}
 }
 
-int StrChr(char * grange, char chat)
+int StrChr(char * grange, char chat) //et StrChr3
 {
-	int index = 0;
+	//int index = 0;
+	char * oldGrange = grange;
 	while (*grange) 
 	{
 		if (*grange == chat)
-			return index;
-		else
-			index++;
-		*grange++;
+		{
+			//return index;
+			return(int) (grange - oldGrange);
+		}
+		/*else
+			index++;*/
+		grange++;
 	}
 	return -1;
 }
@@ -54,8 +58,8 @@ int main()
 	int place;
 	//Memcpy(licorne,vomi, strlen(licorne + 1));
 	//Memcpy2(licorne, vomi, strlen(licorne + 1));
+	place = StrChr(licorne, 'c');
 
-	place = StrChr2(licorne, 'c');
-	printf("Emplacement: %i\n", place);
+	printf("Emplacement du char: %i\n", place);
 	printf("licorne %s\n", licorne);
 }
