@@ -4,6 +4,8 @@
 #include "pch.h"
 #include <iostream>
 
+static void TestRec();
+
 void Memcpy(char * dest, char * src, int size)
 {
 	while (size--)
@@ -144,10 +146,84 @@ int main()
 	comp = StrCmp(text1, text1);
 	printf("Comparaison: %i\n", comp);*/
 
-	char text[1024] = "Lorem ipsum dolor sit amer";
+	/*char text[1024] = "Lorem ipsum dolor sit amer";
 	char token[1024] = "dolor";
 
 	char * TokenInText = StrStr(text, token);
 	int pos = (int)(TokenInText - text);
-	printf("le token est en position %d\n", pos);
+	printf("le token est en position %d\n", pos);*/
+
+	TestRec();
+}
+
+int add(int a, int b)
+{
+	int i = 0;
+	for (i = 0; i < a + b; ++i);
+	return i;
+}
+
+int add1(int a, int b)
+{
+	int val = a;
+	for (int i = 0; i < b; ++i)
+		val++;
+	return val;
+}
+
+int addRec(int a, int b)
+{
+	if (a == 0)
+		return b;
+	else
+		return addRec(a - 1, b + 1);
+}
+
+int addRec2(int a, int b)
+{
+	if (a == 0)
+		return b;
+	else if (b == 0)
+		return b;
+	else
+		return 1+ addRec2(a-1, b);
+}
+
+int subRec(int a, int b)
+{
+	if (b == 0) return a;
+	if (a == 0) return -b;
+	if (b < 0) return subRec(a + 1, b + 1);
+	if (b > 0) return subRec(a-1, b-1);
+}
+
+int subRec2(int a, int b)
+{
+	if (b == 0) return a;
+	else if (b > 0)
+		return subRec2(a, b - 1) - 1;
+	else
+		return subRec2(a, b + 1) + 1;
+
+}
+
+int mulRec(int a, int b)
+{
+	printf("a: %i, b: %i\n", a, b);
+	if (b == 0 || a == 0) return 0;
+	if (b == 1) return a;
+	if (a == 1) return b;
+	if (b < 0) return -mulRec(a, -b);
+	return a + mulRec(a, b - 1);
+
+}
+
+void TestRec() 
+{
+	int foo = add1(2, 2);
+	int foo2 = addRec(2, 3);
+	int foo3 = addRec2(4, 2);
+	int foo4 = subRec(4, 6);
+	int foo5 = mulRec(-3, 3);
+	int i = 0;
 }
