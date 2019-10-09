@@ -339,6 +339,16 @@ void StrcatRec(char * str0, char * str1)
 	return StrcatRec(str0 + 1, str1);
 }
 
+char * StrStrRec(char * meuleDeFoin, char * aiguille)
+{
+	if (strlen(meuleDeFoin) < strlen(aiguille))		return nullptr;
+	
+	if (strncmp(meuleDeFoin, aiguille, strlen(aiguille)) == 0)
+		return meuleDeFoin;
+	else
+		StrStrRec(meuleDeFoin + 1, aiguille);
+}
+
 void TestRec() 
 {
 	int reste = 0;
@@ -372,8 +382,14 @@ void TestRec()
 	//int val = StrcmpRec(Bonjour, Bonsoir);
 	//printf("value: %i\n", val);
 
-	StrcatRec(Bonjour, Bonsoir);
-	printf("value: %s\n", Bonjour);
+	//StrcatRec(Bonjour, Bonsoir);
+	//printf("value: %s\n", Bonjour);
+
+	char p1[64] = "Ohayo Oyasumi Konnichiwa Konbanwa";
+	char p2[32] = "Oyasumi";
+	char * Order = StrStrRec(p1, p2);
+	int pos = (int)(Order - p1);
+	printf("le token est en position %d\n", pos);
 
 	int i = 0;
 }
