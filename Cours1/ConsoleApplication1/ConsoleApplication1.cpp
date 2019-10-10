@@ -339,6 +339,14 @@ void StrcatRec(char * str0, char * str1)
 	return StrcatRec(str0 + 1, str1);
 }
 
+int StrchrRec(char* str, char token)
+{
+	if (*str == 0) return -strlen(str);
+	if (*str = token) return 0;
+
+	return 1 + StrchrRec(str + 1, token);
+}
+
 char * StrStrRec(char * meuleDeFoin, char * aiguille)
 {
 	if (strlen(meuleDeFoin) < strlen(aiguille))		return nullptr;
@@ -387,6 +395,10 @@ void TestRec()
 
 	char p1[64] = "Ohayo Oyasumi Konnichiwa Konbanwa";
 	char p2[32] = "Oyasumi";
+
+	place = StrchrRec(p1, 'y');
+	printf("Emplacement du char: %i\n", place);
+
 	char * Order = StrStrRec(p1, p2);
 	int pos = (int)(Order - p1);
 	printf("le token est en position %d\n", pos);
