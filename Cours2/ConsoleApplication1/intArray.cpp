@@ -52,7 +52,7 @@ int intArray::SearchPosition(int elem) { //TabTrié
 	for (int i = 0; i < curSize; i++) {
 		if (data[i] >= elem) return i;
 	}
-	return -1;
+	return curSize;
 }
 
 void intArray::Remove(int elem) {
@@ -71,4 +71,28 @@ void intArray::RemoveAll() {
 		data[i] = NULL;
 	}
 	curSize = 0;
+}
+
+void intArray::fillWithRandom(int nbElem)
+{
+	RemoveAll();
+	ensure(nbElem);
+
+	for (int i = 0; i < nbElem; i++)
+	{
+		int val = std::rand() % 100;
+		set(i, val);
+	}
+}
+
+void intArray::Sort() {
+	intArray nuData;
+	for (int i = 0; i < curSize; i++) {
+		int val = get(i);
+		nuData.insert(nuData.SearchPosition(val), val);
+	}
+
+	for (int j = 0; j < curSize; j++) {
+		set(j, nuData.get(j));
+	}
 }

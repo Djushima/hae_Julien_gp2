@@ -58,13 +58,17 @@ int main()
 		t.set(1, 6);
 		t.set(2, 10);
 
-		assert(t.SearchPosition(1) == 0);
-		assert(t.SearchPosition(1) == 0);
-		assert(t.SearchPosition(6) == 1);
-		assert(t.SearchPosition(8) == 2);
+		t.insert(t.SearchPosition(1), 1);
+		t.insert(t.SearchPosition(6), 6);
+		t.insert(t.SearchPosition(8), 8);
 
 		t.Remove(6);
-		t.RemoveAll();
+	}
+
+	{
+		intArray t;
+		t.fillWithRandom(16);
+		t.Sort();
 
 		int i = 0;
 	}

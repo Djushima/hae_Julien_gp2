@@ -15,7 +15,7 @@ public:
 	//membre TEST statique (qui n'existe qu'à un seul endroit)
 	static int TEST;
 
-	intArray(int size, const char * name = "") {
+	intArray(int size = 1, const char * name = "") {
 		//on passe name en std::string
 		//alloue auto un char * et en fait la copie
 		this->name = name;
@@ -86,4 +86,8 @@ public:
 	void Remove(int elem);
 
 	void RemoveAll();
+
+	void fillWithRandom(int nbElem);
+
+	void Sort();
 };
