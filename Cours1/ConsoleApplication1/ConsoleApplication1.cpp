@@ -363,6 +363,20 @@ char * StrStrRec(char * meuleDeFoin, char * aiguille)
 		StrStrRec(meuleDeFoin + 1, aiguille);
 }
 
+bool startWith(const char * s0, const char * s1)
+{
+	if (*s0 == 0 && *s1 != 0) return false;
+	if (*s1 == 0) return true;
+	if (*s0 != *s1) return false;
+	else return startWith(s0 + 1, s1 + 1);
+}
+
+const char * StrStrRec2(const char * s0, const char * s1)
+{
+	if (startWith(s0, s1)) return s0;
+	else return StrStrRec2(s0 + 1, s1);
+}
+
 void TestRec() 
 {
 	int reste = 0;
