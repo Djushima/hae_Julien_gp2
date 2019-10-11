@@ -47,3 +47,28 @@ void intArray::insert(int pos, int elem) {
 	else
 		curSize++;
 }
+
+int intArray::SearchPosition(int elem) { //TabTrié
+	for (int i = 0; i < curSize; i++) {
+		if (data[i] >= elem) return i;
+	}
+	return -1;
+}
+
+void intArray::Remove(int elem) {
+	for (int i = 0; i < curSize; i++) {
+		if (data[i] == elem) {
+			for (int j = i; j < curSize; j++)
+				data[j] = (j + 1 < curSize ? data[j + 1] : NULL);
+			curSize--;
+			//break; Si tu veux enlever que la 1ere occurence.
+		}
+	}
+}
+
+void intArray::RemoveAll() {
+	for (int i = 0; i < curSize; i++) {
+		data[i] = NULL;
+	}
+	curSize = 0;
+}

@@ -45,15 +45,15 @@ public:
 
 	bool ensure(int size);
 
-	int operator() (int pos) {
-		ensure(pos);
+	/*int operator() (int pos) {
+		ensure(pos+1);
 		return data[pos];
 	}
 
 	int & operator[] (int pos) {
-		ensure(pos);
+		ensure(pos+1);
 		return data[pos];
-	}
+	}*/
 
 	int getLength() {
 		return curSize;
@@ -64,9 +64,10 @@ public:
 	}
 
 	void set(int pos, int elem) {
-		ensure(pos + 1);
+		ensure(pos+1);
 		data[pos] = elem;
-		curSize = pos + 1;
+		if (curSize <= pos)
+			curSize = pos + 1;
 	}
 
 	void set_unsafe(int pos, int elem) {
@@ -79,4 +80,10 @@ public:
 	void push_first(int elem);
 
 	void insert(int pos, int elem);
+
+	int SearchPosition(int elem);
+
+	void Remove(int elem);
+
+	void RemoveAll();
 };
