@@ -15,7 +15,7 @@ public:
 	//membre TEST statique (qui n'existe qu'à un seul endroit)
 	static int TEST;
 
-	intArray(int size, const char * name = nullptr) {
+	intArray(int size, const char * name = "") {
 		//on passe name en std::string
 		//alloue auto un char * et en fait la copie
 		this->name = name;
@@ -33,10 +33,42 @@ public:
 		data = new int[size];
 		for (int i = 0; i < size; ++i) data[i] = 0;
 
+		//curSize = 0;
+		maxSize = size;
+
 	}
 
 	~intArray() {
 
 		printf("Detruite! %s\n", name.c_str());
+	}
+
+	void ensure(int size)
+	{
+		if (maxSize > size) return;
+
+		int * dataTemp = new int[size];
+		for (int i = 0; i < maxSize; i++)
+		{
+			dataTemp[i] = data[i];
+		}
+		delete(data);
+		data = dataTemp;
+
+		maxSize = size;
+		printf("IN\n");
+	}
+
+	void set(int pos, int elem)
+	{
+
+	}
+
+	void push_back(int elem) {
+
+	}
+
+	void push_first(int elem) {
+
 	}
 };

@@ -20,18 +20,22 @@ int main()
 
 		//variable locale
 		intArray tab0 = intArray(16, nameTab0);
-	}
 
+		tab0.ensure(17);
+
+	}
+	//ici tableau détruit.
 	{
 		//Variable dynamique
 		intArray * tab1 = new intArray(16, nameTab1);
+		tab1->ensure(20);
 		delete(tab1);
 		tab1 = nullptr;
 	}
 
 }
 
-//ici tableau détruit.
+
 
 // Exécuter le programme : Ctrl+F5 ou menu Déboguer > Exécuter sans débogage
 // Déboguer le programme : F5 ou menu Déboguer > Démarrer le débogage
