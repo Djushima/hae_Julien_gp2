@@ -330,7 +330,11 @@ int StrcmpRec(char *str0, char * str1)
 
 void StrcatRec(char * str0, char * str1)
 {
-	if (*str1 == 0) return;
+	if (*str1 == 0)
+	{
+		*str0 = '\0';
+		return;
+	}
 	if (*str0 == 0)
 	{
 		*str0 = *str1;
@@ -382,14 +386,14 @@ void TestRec()
 	//int val = StrcmpRec(Bonjour, Bonsoir);
 	//printf("value: %i\n", val);
 
-	//StrcatRec(Bonjour, Bonsoir);
-	//printf("value: %s\n", Bonjour);
+	StrcatRec(Bonjour, Bonsoir);
+	printf("value: %s\n", Bonjour);
 
-	char p1[64] = "Ohayo Oyasumi Konnichiwa Konbanwa";
+	/*char p1[64] = "Ohayo Oyasumi Konnichiwa Konbanwa";
 	char p2[32] = "Oyasumi";
 	char * Order = StrStrRec(p1, p2);
 	int pos = (int)(Order - p1);
-	printf("le token est en position %d\n", pos);
+	printf("le token est en position %d\n", pos);*/
 
 	int i = 0;
 }
