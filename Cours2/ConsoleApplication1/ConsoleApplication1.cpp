@@ -20,17 +20,34 @@ int main()
 
 		//variable locale
 		intArray tab0 = intArray(16, nameTab0);
-
-		tab0.ensure(17);
-
 	}
-	//ici tableau détruit.
+	//ici tableau tab0 détruit.
+
 	{
 		//Variable dynamique
 		intArray * tab1 = new intArray(16, nameTab1);
-		tab1->ensure(20);
+		tab1->ensure(17);
 		delete(tab1);
 		tab1 = nullptr;
+	}
+
+	{
+		intArray t(16);
+		t.set(0, 8);
+		t.set(3, 66);
+		for (int i = 0; i < t.getLength(); i++) {
+			printf("t[%d]: %d\n", i, t[i]);
+		}
+	}
+
+	{
+		intArray t(10);
+		for (int i = 0; i < 6; i++) {
+			t.set(i, i*i);
+		}
+		t.push_back(5);
+		t.push_first(2);
+		t.insert(3, 88);
 	}
 
 }

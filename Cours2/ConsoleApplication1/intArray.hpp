@@ -43,32 +43,40 @@ public:
 		printf("Detruite! %s\n", name.c_str());
 	}
 
-	void ensure(int size)
-	{
-		if (maxSize > size) return;
+	bool ensure(int size);
 
-		int * dataTemp = new int[size];
-		for (int i = 0; i < maxSize; i++)
-		{
-			dataTemp[i] = data[i];
-		}
-		delete(data);
-		data = dataTemp;
-
-		maxSize = size;
-		printf("IN\n");
+	int operator() (int pos) {
+		ensure(pos);
+		return data[pos];
 	}
 
-	void set(int pos, int elem)
-	{
-
+	int & operator[] (int pos) {
+		ensure(pos);
+		return data[pos];
 	}
 
-	void push_back(int elem) {
-
+	int getLength() {
+		return curSize;
 	}
 
-	void push_first(int elem) {
-
+	int get(int pos) {
+		return data[pos];
 	}
+
+	void set(int pos, int elem) {
+		ensure(pos + 1);
+		data[pos] = elem;
+		curSize = pos + 1;
+	}
+
+	void set_unsafe(int pos, int elem) {
+		data[pos] = elem;
+		curSize = pos + 1;
+	}
+
+	void push_back(int elem);
+
+	void push_first(int elem);
+
+	void insert(int pos, int elem);
 };
