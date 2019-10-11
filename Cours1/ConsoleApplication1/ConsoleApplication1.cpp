@@ -343,13 +343,15 @@ void StrcatRec(char * str0, char * str1)
 	return StrcatRec(str0 + 1, str1);
 }
 
-int StrchrRec(char* str, char token)
+int StrchrRec(char* str, char token, char * _start)
 {
-	if (*str == 0) return -strlen(str);
-	if (*str = token) return 0;
+	if (*str == 0) return -1;
+	if (*str == token) return str - _start;
 
-	return 1 + StrchrRec(str + 1, token);
+	return StrchrRec(str + 1, token, _start);
 }
+
+void assert(bool condition) { if (!condition) throw std::exception("non"); }
 
 char * StrStrRec(char * meuleDeFoin, char * aiguille)
 {
@@ -397,15 +399,15 @@ void TestRec()
 	StrcatRec(Bonjour, Bonsoir);
 	printf("value: %s\n", Bonjour);
 
-	/*char p1[64] = "Ohayo Oyasumi Konnichiwa Konbanwa";
+	char p1[64] = "Ohayo Oyasumi Konnichiwa Konbanwa";
 	char p2[32] = "Oyasumi";
 
-	place = StrchrRec(p1, 'y');
+	int place = StrchrRec(p1, 'y', p1);
 	printf("Emplacement du char: %i\n", place);
 
 	char * Order = StrStrRec(p1, p2);
 	int pos = (int)(Order - p1);
-	printf("le token est en position %d\n", pos);*/
+	printf("le token est en position %d\n", pos);
 
 	int i = 0;
 }
