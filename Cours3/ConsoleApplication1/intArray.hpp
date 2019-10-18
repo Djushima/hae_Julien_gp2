@@ -95,24 +95,23 @@ public:
 
 	void insertSort();
 
-	int SearchSortPosition()
-	{
-		for (int i = 1; i < curSize; i++)
-		{
-			int j = i;
-			while (j > 0)
-			{
-				if (data[j] > data[j - 1])
-					j--;
-				else
-					return j;
-			}
-		}
-		return curSize;
+	int binarySearch(int key) {
+		//Demander la recherche entre 0 et la taille
+		return _binarysearch(key, 0, getLength());
 	}
 
-	void insertSort2(int key) {
-		//trier a partir de cette key.
+	int _binarysearch(int key, int start, int end) {
+		int pivot = (start + end) / 2;
 
+		if (end <= start) return start;
+		if (end == start + 1) {
+			if (key > data[start]) return end;
+			if (key < data[end]) return start;
+			return start;
+		}
+		if (key == data[pivot]) return pivot;
+
+		if (key < data[pivot]) return _binarysearch(key, start, pivot);
+		else return _binarysearch(key, pivot, end);
 	}
 };
