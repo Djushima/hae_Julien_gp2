@@ -90,4 +90,29 @@ public:
 	void fillWithRandom(int nbElem);
 
 	void Sort();
+
+	void swap(int pos0, int pos1);
+
+	void insertSort();
+
+	int SearchSortPosition()
+	{
+		for (int i = 1; i < curSize; i++)
+		{
+			int j = i;
+			while (j > 0)
+			{
+				if (data[j] > data[j - 1])
+					j--;
+				else
+					return j;
+			}
+		}
+		return curSize;
+	}
+
+	void insertSort2(int key) {
+		//trier a partir de cette key.
+
+	}
 };

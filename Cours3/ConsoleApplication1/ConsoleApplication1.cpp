@@ -3,10 +3,25 @@
 
 #include "pch.h"
 #include <iostream>
+#include "intArray.hpp"
 
 int main()
 {
-    std::cout << "Hello World!\n"; 
+	intArray t;
+	t.set(0, 1);
+	t.set(1, 2);
+	t.set(2, 3);
+	t.set(3, 4);
+	t.set(4, 72);
+	t.set(5, 40);
+	t.set(6, 12);
+
+	int key = t.SearchSortPosition();
+	printf("Value: %i\n", key);
+	//t.fillWithRandom(100);
+	//t.insertSort();
+
+	int i = 0;
 }
 
 // Exécuter le programme : Ctrl+F5 ou menu Déboguer > Exécuter sans débogage

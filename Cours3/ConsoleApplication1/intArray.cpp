@@ -17,7 +17,6 @@ bool intArray::ensure(int size)
 	data = dataTemp;
 
 	maxSize = size;
-	printf("IN\n");
 	return true;
 }
 
@@ -94,5 +93,23 @@ void intArray::Sort() {
 
 	for (int j = 0; j < curSize; j++) {
 		set(j, nuData.get(j));
+	}
+}
+
+void intArray::swap(int pos0, int pos1) {
+	int temp = data[pos1];
+	data[pos1] = data[pos0];
+	data[pos0] = temp;
+}
+
+void intArray::insertSort() {
+	for (int i = 1; i < curSize; i++)
+	{
+		int j = i;
+		while ((j>0) && data[j] < data[j - 1])
+		{
+			swap(j, j - 1);
+			j--;
+		}
 	}
 }
