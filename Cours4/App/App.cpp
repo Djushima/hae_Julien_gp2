@@ -133,6 +133,23 @@ void drawCatmull(sf::RenderWindow &win, Clock clock) {
 	win.draw(circle);
 }
 
+static RectangleShape * Square = nullptr;
+static Vector2f SquarePos;
+
+void initMovingSquare() {
+	Square = new RectangleShape(Vector2f(16, 16));
+	Square->setPosition(SquarePos.x = 400, SquarePos.y = 400);
+}
+
+void drawMovingSquare(sf::RenderWindow &win)
+{
+	Square->setOrigin(8, 8);
+	Square->setFillColor(sf::Color::Blue);
+	Square->setOutlineColor(sf::Color::Red);
+	Square->setOutlineThickness(1);
+	win.draw(*Square);
+}
+
 int main()
 {
 	sf::ContextSettings settings;
@@ -153,9 +170,11 @@ int main()
 
 	float fps[4] = { 0.f, 0.f, 0.f, 0.f };
 	int step = 0;
+	int every = 10;
 
 	sf::Font font;
 	font.loadFromFile("arial.ttf");
+
 	sf::Text fpsText;
 	sf::Text MousePos;
 	MousePos.setPosition(975, 0);
@@ -163,7 +182,10 @@ int main()
 	fpsText.setFont(font);
 	MousePos.setFillColor(sf::Color::Blue);
 	fpsText.setFillColor(sf::Color::Red);
-	int every = 10;
+
+	initMovingSquare();
+	float squareSpeed = 1;
+
 
 	while (window.isOpen())																			//tout le temps.
 	{
@@ -204,12 +226,52 @@ int main()
 				window.close();
 		}
 
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+		{
+			if (squareSpeed < 10)
+				squareSpeed += 0.1f;
+			if (SquarePos.x > 0)
+				SquarePos.x -= squareSpeed;
+		}
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+		{
+			if (squareSpeed < 10)
+				squareSpeed += 0.1f;
+			if (SquarePos.x < 1280)
+				SquarePos.x += squareSpeed;
+		}
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+		{
+			if (squareSpeed < 10)
+				squareSpeed += 0.1f;
+			if (SquarePos.y > 0)
+			SquarePos.y -= squareSpeed;
+		}
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+		{
+			if (squareSpeed < 10)
+				squareSpeed += 0.1f;
+			if (SquarePos.y < 720)
+				SquarePos.y += squareSpeed;
+		}
+		else
+			if (squareSpeed > 0)
+				squareSpeed -= 0.2f;
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+			//Creer Rectangle, S'en servir en tant que Particule qu'on envoie
+		}
+
 		window.clear();																				//Nettoie la frame
 		//window.draw(shape);																			//On dessine la forme.
 		window.draw(fpsText);
-		window.draw(MousePos);
+		//window.draw(MousePos);
 		//drawCurve(window, Clock);
-		drawCatmull(window, Clock);
+		//drawCatmull(window, Clock);
+		drawMovingSquare(window);
+		Square->setPosition(SquarePos.x, SquarePos.y);
+
 		window.display();																			//Ca dessine et attends la vsync.
 
 		fps[step % 4] = 1.0 / (frameStart - prevFrameStart).asSeconds();
