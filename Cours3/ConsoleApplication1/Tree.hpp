@@ -9,7 +9,7 @@ public:
 	Node *	left = nullptr;
 	Node *	right = nullptr;
 
-	Node(const T&elem) {
+	Node(const T &elem) {
 		this->elem = elem;
 	}
 
