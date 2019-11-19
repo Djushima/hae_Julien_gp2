@@ -33,27 +33,40 @@ public:
 	}
 };
 
-class Projectile {
-public:
-	
-	sf::Shape *sprite = nullptr;
-	sf::FloatRect box;
+class Projectile : public Entity {
+private:
+	const double speed = 0.000000000000000000000000002;
+	const double PI = 3.141592653589793238463;
 	Vector2f dir;
-	const int speed = 2;
-	bool Bounced = false;
+	bool Bounced;
+	float x, y;
 
-	Projectile(sf::Shape *forme) {
-		this->sprite = forme;
-		this->box = forme->getGlobalBounds();
+public:
+	Projectile(float angle, sf::Shape *forme, Vector2f Pos, sf::Color FillColor, sf::Color OutColor) : 
+	Entity(forme, Pos, FillColor, OutColor) {
+		this->dir = Vector2f(cos(angle), sin(angle));
+		this->Bounced = false;
+		this->sprite->setRotation(angle * (180 / PI));
+		this->x = this->sprite->getPosition().x;
+		this->y = this->sprite->getPosition().y;
 	}
+
+	~Projectile(){
+		if (dir != Vector2f(0, 0)) dir = Vector2f(0, 0);
+	}
+
+	void Move() {
+		x += dir.x;
+		y += dir.y;
+		this->sprite->setPosition(x,y);
+	}
+
 };
 
-float rd() {
-	return 1.0 * rand() / RAND_MAX;
-}
-
 static std::vector<Entity*> Objects;
+static std::vector<Projectile*> ProjectileTab;
 static Vector2f SquarePos;
+
 
 RectangleShape* initSquareRender(int x, int y) {
 	auto Square = new RectangleShape(Vector2f(x,y));
@@ -101,6 +114,8 @@ void initMap() {
 void drawMap(sf::RenderWindow &win) {
 	for (int i = 0; i < Objects.size(); i++)
 		Objects[i]->_draw(win);
+	for (int i = 0; i < ProjectileTab.size(); i++)
+		ProjectileTab[i]->_draw(win);
 }
 
 void drawCible(sf::RenderWindow &win) {
@@ -122,13 +137,14 @@ void drawCible(sf::RenderWindow &win) {
 
 void drawProjectile(sf::RenderWindow &win) {
 	auto angle = atan2(sf::Mouse::getPosition(win).y - Objects[0]->sprite->getPosition().y, sf::Mouse::getPosition(win).x - Objects[0]->sprite->getPosition().x);
-	
-	auto Proj = new Entity(
-		initSquareRender(10, 15),
+	auto Proj = new Projectile(
+		angle,
+		initSquareRender(15, 10),
 		Objects[0]->sprite->getPosition(),
 		sf::Color(0x6EF3FFff),
 		sf::Color::Transparent);
-	Objects.push_back(Proj);
+	Proj->sprite->setOrigin(Vector2f(0, 5));
+	ProjectileTab.push_back(Proj);
 }
 
 int main()
@@ -189,6 +205,9 @@ int main()
 
 				if (event.key.code == sf::Keyboard::F)
 					printf("fps %f\n", 0.25*(fps[0] + fps[1] + fps[2] + fps[3]));
+
+				if (event.key.code == sf::Keyboard::Space)
+					drawProjectile(window);
 			}
 
 			if (event.type == sf::Event::Closed)
@@ -227,15 +246,13 @@ int main()
 
 		window.clear();																				//Nettoie la frame
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-			drawProjectile(window);
-		}
-
 		drawMap(window);
 		window.draw(fpsText);
 		window.draw(MousePos);
 		drawCible(window);
 		Objects[0]->sprite->setPosition(SquarePos.x, SquarePos.y);
+		for (int i = 0; i < ProjectileTab.size(); i++)
+				ProjectileTab[i]->Move();
 
 		window.display();																			//Ca dessine et attends la vsync.
 
