@@ -91,7 +91,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>C:\Workspace\Maindron\hae_Julien_gp2\SFML\include; C:\Users\julma\Documents\HUMAN ACADEMY\2ème Année\C++\hae_Julien_gp2\SFML\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\julma\Documents\HUMAN ACADEMY\2ème Année\C++\hae_Julien_gp2\Cours5\App\Box2D;C:\Workspace\Maindron\hae_Julien_gp2\SFML\include;C:\Users\julma\Documents\HUMAN ACADEMY\2ème Année\C++\hae_Julien_gp2\SFML\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

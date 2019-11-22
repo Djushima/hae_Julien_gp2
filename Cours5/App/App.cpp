@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "Lib.hpp"
+//#include "Box2D/Box2D.h"
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include <direct.h>
@@ -31,6 +32,8 @@ public:
 	void _draw(sf::RenderWindow &win) {
 		win.draw(*sprite);
 	}
+
+	virtual void Move() {};
 };
 
 class Projectile : public Entity {
@@ -59,6 +62,7 @@ public:
 		x += dir.x;
 		y += dir.y;
 		this->sprite->setPosition(x,y);
+		Entity::Move();
 	}
 
 };
@@ -66,6 +70,9 @@ public:
 static std::vector<Entity*> Objects;
 static std::vector<Projectile*> ProjectileTab;
 static Vector2f SquarePos;
+
+//b2Vec2 gravity(0.0f, -10.0f);
+//b2World world(gravity);
 
 
 RectangleShape* initSquareRender(int x, int y) {
@@ -114,8 +121,6 @@ void initMap() {
 void drawMap(sf::RenderWindow &win) {
 	for (int i = 0; i < Objects.size(); i++)
 		Objects[i]->_draw(win);
-	for (int i = 0; i < ProjectileTab.size(); i++)
-		ProjectileTab[i]->_draw(win);
 }
 
 void drawCible(sf::RenderWindow &win) {
@@ -144,7 +149,7 @@ void drawProjectile(sf::RenderWindow &win) {
 		sf::Color(0x6EF3FFff),
 		sf::Color::Transparent);
 	Proj->sprite->setOrigin(Vector2f(0, 5));
-	ProjectileTab.push_back(Proj);
+	Objects.push_back(Proj);
 }
 
 int main()
@@ -251,8 +256,14 @@ int main()
 		window.draw(MousePos);
 		drawCible(window);
 		Objects[0]->sprite->setPosition(SquarePos.x, SquarePos.y);
-		for (int i = 0; i < ProjectileTab.size(); i++)
-				ProjectileTab[i]->Move();
+		for (int i = 0; i < Objects.size(); i++)
+				Objects[i]->Move();
+
+		for (int i = 0; i < Objects.size(); i++)
+			for (int j = 0; j < Objects.size(); j++)
+				if (i != j && Objects[i]->box.intersects(Objects[j]->box)) {
+					//traitement;
+				}
 
 		window.display();																			//Ca dessine et attends la vsync.
 
