@@ -3,7 +3,7 @@
 
 #include "pch.h"
 #include "Lib.hpp"
-//#include "Box2D/Box2D.h"
+#include <Box2D/Box2D.h>
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include <direct.h>
@@ -14,6 +14,7 @@ class Entity {
 public:
 	sf::Shape *sprite = nullptr;			//Rendu
 	sf::FloatRect box;						//Collision
+	bool movable = false;
 
 	Entity(sf::Shape *forme, Vector2f Pos, sf::Color FillColor, sf::Color OutColor) {
 		this->sprite = forme;
@@ -33,12 +34,12 @@ public:
 		win.draw(*sprite);
 	}
 
-	virtual void Move() {};
+	virtual void Move() {
+	};
 };
 
 class Projectile : public Entity {
 private:
-	const double speed = 0.000000000000000000000000002;
 	const double PI = 3.141592653589793238463;
 	Vector2f dir;
 	bool Bounced;
@@ -52,6 +53,7 @@ public:
 		this->sprite->setRotation(angle * (180 / PI));
 		this->x = this->sprite->getPosition().x;
 		this->y = this->sprite->getPosition().y;
+		this->movable = true;
 	}
 
 	~Projectile(){
@@ -59,9 +61,10 @@ public:
 	}
 
 	void Move() {
-		x += dir.x;
-		y += dir.y;
+		x += dir.x * 2;
+		y += dir.y * 2;
 		this->sprite->setPosition(x,y);
+		this->box = this->sprite->getGlobalBounds();
 		Entity::Move();
 	}
 
@@ -71,8 +74,8 @@ static std::vector<Entity*> Objects;
 static std::vector<Projectile*> ProjectileTab;
 static Vector2f SquarePos;
 
-//b2Vec2 gravity(0.0f, -10.0f);
-//b2World world(gravity);
+b2Vec2 gravity(0.0f, 0.0f);
+b2World world(gravity);
 
 
 RectangleShape* initSquareRender(int x, int y) {
@@ -87,6 +90,7 @@ void initMap() {
 		sf::Color(0xFF0101ff),
 		sf::Color(0x0107FFff));
 	Char->sprite->setOrigin(Vector2f(8, 8));
+	Char->movable = true;
 	Objects.push_back(Char);
 
 	auto NBorder = new Entity(
@@ -144,12 +148,18 @@ void drawProjectile(sf::RenderWindow &win) {
 	auto angle = atan2(sf::Mouse::getPosition(win).y - Objects[0]->sprite->getPosition().y, sf::Mouse::getPosition(win).x - Objects[0]->sprite->getPosition().x);
 	auto Proj = new Projectile(
 		angle,
-		initSquareRender(15, 10),
-		Objects[0]->sprite->getPosition(),
+		initSquareRender(7, 2),
+		Vector2f(Objects[0]->sprite->getPosition().x + cos(angle) * 15, Objects[0]->sprite->getPosition().y + sin(angle) * 15),
 		sf::Color(0x6EF3FFff),
 		sf::Color::Transparent);
-	Proj->sprite->setOrigin(Vector2f(0, 5));
+
+	Proj->sprite->setOrigin(Vector2f(0, 1));
 	Objects.push_back(Proj);
+}
+
+Vector2f CalculNormal(sf::Shape *forme){
+	
+
 }
 
 int main()
@@ -157,7 +167,7 @@ int main()
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 8;
 
-	sf::RenderWindow window(sf::VideoMode(1600,900), "SFML works!", sf::Style::Default, settings);	//Creer une fenetre appelé "SFML Works" de taille 200x200)
+	sf::RenderWindow window(sf::VideoMode(1280,720), "SFML works!", sf::Style::Default, settings);	//Creer une fenetre appelé "SFML Works" de taille 200x200)
 	sf::CircleShape shape(100.f, 2 * 3.141569 * 100);												//Creer en mémoire un rond de taille 100f
 	shape.setFillColor(sf::Color::Green);															//Set la couleur du rond a Vert
 	shape.setOutlineThickness(4);
@@ -255,16 +265,53 @@ int main()
 		window.draw(fpsText);
 		window.draw(MousePos);
 		drawCible(window);
+		Vector2f LastPos = Objects[0]->sprite->getPosition();
 		Objects[0]->sprite->setPosition(SquarePos.x, SquarePos.y);
-		for (int i = 0; i < Objects.size(); i++)
-				Objects[i]->Move();
+		Objects[0]->box = Objects[0]->sprite->getGlobalBounds();
 
-		for (int i = 0; i < Objects.size(); i++)
-			for (int j = 0; j < Objects.size(); j++)
-				if (i != j && Objects[i]->box.intersects(Objects[j]->box)) {
-					Vector2f CollPosition = Objects[i]->sprite->getPosition();
-					Objects[i]->sprite->setPosition(CollPosition);
+		for (int i = 0; i < Objects.size(); i++) {
+			Objects[i]->Move();
+		}
+
+		for (int i = 1; i < Objects.size(); i++)
+		{
+			auto mb = Objects[0]->sprite->getGlobalBounds();
+			auto extbounds = Objects[i]->sprite->getGlobalBounds();
+			if (Objects[0]->box.intersects(Objects[i]->box))
+			{
+				if (!Objects[i]->movable)
+				{
+					SquarePos = LastPos;
+					Objects[0]->sprite->setPosition(LastPos);
 				}
+				else
+				{
+					Objects.erase(Objects.begin()+i);
+					Objects.erase(Objects.begin());
+
+				}
+			}
+
+			
+			for (int j = 0; i < Objects.size(); j++)
+			{
+				if (i != j && Objects[i]->box.intersects(Objects[j]->box))
+					if (!Objects[j]->movable && !Objects[i]->movable)
+					{
+						//Rien, car 2 objets immobilles.
+					}
+					else if (Objects[i]->movable && !Objects[j]->movable)
+					{
+						//Appliquer - au dir en fonction du contact Point/ProjOrigin.
+					}
+					else if (Objects[i]->movable && Objects[j]->movable)
+					{
+						Objects.erase(Objects.begin() + i);
+						Objects.erase(Objects.begin() + j);
+					}
+			}
+			
+		}
 
 		window.display();																			//Ca dessine et attends la vsync.
 
