@@ -262,7 +262,8 @@ int main()
 		for (int i = 0; i < Objects.size(); i++)
 			for (int j = 0; j < Objects.size(); j++)
 				if (i != j && Objects[i]->box.intersects(Objects[j]->box)) {
-					//traitement;
+					Vector2f CollPosition = Objects[i]->sprite->getPosition();
+					Objects[i]->sprite->setPosition(CollPosition);
 				}
 
 		window.display();																			//Ca dessine et attends la vsync.
