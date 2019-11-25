@@ -35,17 +35,21 @@ public:
 	}
 
 	virtual void Move() {
-	};
+	}
+
+	virtual void Rebond(Entity* Object2) {
+	}
 };
 
 class Projectile : public Entity {
 private:
 	const double PI = 3.141592653589793238463;
 	Vector2f dir;
-	bool Bounced;
 	float x, y;
 
 public:
+	bool Bounced;
+
 	Projectile(float angle, sf::Shape *forme, Vector2f Pos, sf::Color FillColor, sf::Color OutColor) : 
 	Entity(forme, Pos, FillColor, OutColor) {
 		this->dir = Vector2f(cos(angle), sin(angle));
@@ -66,6 +70,18 @@ public:
 		this->sprite->setPosition(x,y);
 		this->box = this->sprite->getGlobalBounds();
 		Entity::Move();
+	}
+
+	void Rebond(Entity* Object2) {
+		auto Obj1Pos = this->sprite->getPosition();
+		auto Obj2Pos = Object2->sprite->getPosition();
+		auto Obj2Ofs = Object2->box;
+		if ((Obj1Pos.x > Obj2Pos.x + Obj2Ofs.width) || (Obj1Pos.x < Obj2Pos.x))
+			this->dir = Vector2f(-this->dir.x, this->dir.y);
+		else if ((Obj1Pos.y > Obj2Pos.y + Obj2Ofs.height) || (Obj1Pos.y < Obj2Pos.y))
+			this->dir = Vector2f(this->dir.x, -this->dir.y);
+		this->sprite->setRotation(PI - this->sprite->getRotation());
+		this->Bounced = true;
 	}
 
 };
@@ -155,11 +171,6 @@ void drawProjectile(sf::RenderWindow &win) {
 
 	Proj->sprite->setOrigin(Vector2f(0, 1));
 	Objects.push_back(Proj);
-}
-
-Vector2f CalculNormal(sf::Shape *forme){
-	
-
 }
 
 int main()
@@ -279,35 +290,37 @@ int main()
 			auto extbounds = Objects[i]->sprite->getGlobalBounds();
 			if (Objects[0]->box.intersects(Objects[i]->box))
 			{
-				if (!Objects[i]->movable)
+				if (!Objects[i]->movable)	//Cas: Tank1 vs Wall
 				{
 					SquarePos = LastPos;
 					Objects[0]->sprite->setPosition(LastPos);
 				}
-				else
+				else						//Cas: Tank vs Proj
 				{
 					Objects.erase(Objects.begin()+i);
 					Objects.erase(Objects.begin());
-
+					break;
 				}
 			}
 
 			
-			for (int j = 0; i < Objects.size(); j++)
+			for (int j = 1; j < Objects.size(); j++)
 			{
 				if (i != j && Objects[i]->box.intersects(Objects[j]->box))
-					if (!Objects[j]->movable && !Objects[i]->movable)
+					if (Objects[i]->movable && !Objects[j]->movable) //Cas: Proj vs Wall = Rebond || Destroy
 					{
-						//Rien, car 2 objets immobilles.
+						Projectile * proj = dynamic_cast<Projectile*>(Objects[i]);
+						if (proj->Bounced)
+							Objects.erase(Objects.begin() + i);
+						else
+							proj->Rebond(Objects[j]);
+						break;
 					}
-					else if (Objects[i]->movable && !Objects[j]->movable)
-					{
-						//Appliquer - au dir en fonction du contact Point/ProjOrigin.
-					}
-					else if (Objects[i]->movable && Objects[j]->movable)
+					else if (Objects[i]->movable && Objects[j]->movable) //Cas: Proj vs Proj = Destroy
 					{
 						Objects.erase(Objects.begin() + i);
-						Objects.erase(Objects.begin() + j);
+						Objects.erase(Objects.begin() + j-1);
+						break;
 					}
 			}
 			
