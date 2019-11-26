@@ -14,6 +14,7 @@ class Entity {
 public:
 	sf::Shape *sprite = nullptr;			//Rendu
 	sf::FloatRect box;						//Collision
+	bool playable = false;
 	bool movable = false;
 
 	Entity(sf::Shape *forme, Vector2f Pos, sf::Color FillColor, sf::Color OutColor) {
@@ -44,6 +45,7 @@ public:
 class Projectile : public Entity {
 private:
 	const double PI = 3.141592653589793238463;
+	const int speed = 4;
 	Vector2f dir;
 	float x, y;
 
@@ -65,8 +67,8 @@ public:
 	}
 
 	void Move() {
-		x += dir.x * 2;
-		y += dir.y * 2;
+		x += dir.x * speed;
+		y += dir.y * speed;
 		this->sprite->setPosition(x,y);
 		this->box = this->sprite->getGlobalBounds();
 		Entity::Move();
@@ -88,7 +90,10 @@ public:
 
 static std::vector<Entity*> Objects;
 static std::vector<Projectile*> ProjectileTab;
-static Vector2f SquarePos;
+static std::vector<float> LastCible{ 45, 45 };
+static std::vector<Vector2f> LastPos{Vector2f(640,360) , Vector2f(0,0)};
+static Vector2f SquarePos1;
+const double PI = 3.141592653589793238463;
 
 b2Vec2 gravity(0.0f, 0.0f);
 b2World world(gravity);
@@ -102,11 +107,12 @@ RectangleShape* initSquareRender(int x, int y) {
 void initMap() {
 	auto Char = new Entity(
 		initSquareRender(16, 16),
-		Vector2f(SquarePos.x = 640, SquarePos.y = 360),
+		Vector2f(SquarePos1.x = 640, SquarePos1.y = 360),
 		sf::Color(0xFF0101ff),
 		sf::Color(0x0107FFff));
 	Char->sprite->setOrigin(Vector2f(8, 8));
 	Char->movable = true;
+	Char->playable = true;
 	Objects.push_back(Char);
 
 	auto NBorder = new Entity(
@@ -143,7 +149,7 @@ void drawMap(sf::RenderWindow &win) {
 		Objects[i]->_draw(win);
 }
 
-void drawCible(sf::RenderWindow &win) {
+/*void drawCibleSouris(sf::RenderWindow &win) {
 	sf::Vertex line[] =
 	{
 		sf::Vertex(Objects[0]->sprite->getPosition()),
@@ -158,14 +164,30 @@ void drawCible(sf::RenderWindow &win) {
 	cible.setPosition(sf::Vector2f(sf::Mouse::getPosition(win)));
 	win.draw(cible);
 	win.draw(line, 2, sf::Lines);
+}*/
+
+void drawCible(sf::RenderWindow &win, float X, float Y, int player)
+{
+	sf::Shape *Canon = initSquareRender(10, 5);
+	Canon->setOrigin(0, 2.5);
+	Canon->setPosition(Objects[player]->sprite->getPosition());
+	if (X > 20 || X < -20 || Y < -20 || Y>20)
+	{
+		Canon->setRotation(atan2(Y, X) * (180 / PI));
+		LastCible[player] = atan2(Y, X);
+	}
+	else if ((X > -20 && X < 20) && (Y > -20 && Y < 20))
+		Canon->setRotation(LastCible[player] * (180 / PI));
+	win.draw(*Canon);
 }
 
-void drawProjectile(sf::RenderWindow &win) {
-	auto angle = atan2(sf::Mouse::getPosition(win).y - Objects[0]->sprite->getPosition().y, sf::Mouse::getPosition(win).x - Objects[0]->sprite->getPosition().x);
+void drawProjectile(sf::RenderWindow &win, int player) {
+	//auto angle = atan2(sf::Mouse::getPosition(win).y - Objects[player]->sprite->getPosition().y, sf::Mouse::getPosition(win).x - Objects[player]->sprite->getPosition().x);
+	auto angle = LastCible[player];
 	auto Proj = new Projectile(
 		angle,
 		initSquareRender(7, 2),
-		Vector2f(Objects[0]->sprite->getPosition().x + cos(angle) * 15, Objects[0]->sprite->getPosition().y + sin(angle) * 15),
+		Vector2f(Objects[player]->sprite->getPosition().x + cos(angle) * 15, Objects[player]->sprite->getPosition().y + sin(angle) * 15),
 		sf::Color(0x6EF3FFff),
 		sf::Color::Transparent);
 
@@ -209,6 +231,9 @@ int main()
 	initMap();
 	float squareSpeed = 1;
 
+	float xR1 = 0, yR1 = 0, xL1 = 0, yL1 = 0, xR2 = 0, yR2 = 0, xL2 = 0, yL2 = 0, Trig1 = 0, Trig2 = 0; //Inputs J1 J2
+	bool Fire1 = false, Fire2 = false;
+
 
 	while (window.isOpen())																			//tout le temps.
 	{
@@ -222,18 +247,49 @@ int main()
 
 		frameStart = Clock.getElapsedTime();
 		sf::Event event;																			//recup les event clavier/pad	
-		while (window.pollEvent(event))									
+		while (window.pollEvent(event))
 		{
 			if (event.type == sf::Event::KeyReleased)
 			{
 				if (event.key.code == sf::Keyboard::I)
-					printf("Instant fps %f\n", fps[(step-1)%4]);
+					printf("Instant fps %f\n", fps[(step - 1) % 4]);
 
 				if (event.key.code == sf::Keyboard::F)
 					printf("fps %f\n", 0.25*(fps[0] + fps[1] + fps[2] + fps[3]));
 
-				if (event.key.code == sf::Keyboard::Space)
-					drawProjectile(window);
+				/*if (event.key.code == sf::Keyboard::Space)
+					drawProjectile(window);*/
+			}
+
+			if (event.type == sf::Event::JoystickMoved) //Joystick Input Update
+			{
+				if (event.joystickMove.joystickId == 0)
+				{
+					if (event.joystickMove.axis == sf::Joystick::Axis::X)
+						xR1 = event.joystickMove.position;
+					if (event.joystickMove.axis == sf::Joystick::Axis::Y)
+						yR1 = event.joystickMove.position;
+					if (event.joystickMove.axis == sf::Joystick::Axis::U)
+						xL1 = event.joystickMove.position;
+					if (event.joystickMove.axis == sf::Joystick::Axis::V)
+						yL1 = event.joystickMove.position;
+					if (event.joystickMove.axis == sf::Joystick::Axis::Z)
+						Trig1 = event.joystickMove.position;
+				}
+
+				if (event.joystickMove.joystickId == 1)
+				{
+					if (event.joystickMove.axis == sf::Joystick::Axis::X)
+						xR2 = event.joystickMove.position;
+					if (event.joystickMove.axis == sf::Joystick::Axis::Y)
+						yR2 = event.joystickMove.position;
+					if (event.joystickMove.axis == sf::Joystick::Axis::U)
+						xL2 = event.joystickMove.position;
+					if (event.joystickMove.axis == sf::Joystick::Axis::V)
+						yL2 = event.joystickMove.position;
+					if (event.joystickMove.axis == sf::Joystick::Axis::R)
+						Trig2 = event.joystickMove.position;
+				}
 			}
 
 			if (event.type == sf::Event::Closed)
@@ -241,7 +297,7 @@ int main()
 		}
 
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+		/*if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 		{
 			if (squareSpeed < 3)
 				squareSpeed += 0.05f;
@@ -267,7 +323,35 @@ int main()
 		}
 		else
 			if (squareSpeed > 0)
+				squareSpeed -= 0.3f;*/
+
+		if (xR1 > 20 || xR1 < -20 || yR1 > 20 || yR1 < -20) //Mouvement J1
+		{
+			if (squareSpeed < 2)
+				squareSpeed += 0.05f;
+			SquarePos1.x += (xR1 / 100) * squareSpeed;
+			SquarePos1.y += (yR1 / 100) * squareSpeed;
+			//Possible fonction de rotation du tank
+		}
+		else
+			if (squareSpeed > 0)
 				squareSpeed -= 0.3f;
+
+		if ((Trig1 > 80 || Trig1 < -80) && !Fire1) //Shoot J1
+		{
+			Fire1 = true;
+			drawProjectile(window, 0);
+		}
+		else if ((-10 < Trig1 && Trig1 < 10) && Fire1)
+			Fire1 = false;
+
+		if ((Trig2 > 80 || Trig2 < -80) && !Fire2) //Shoot J2
+		{
+			Fire2 = true;
+			drawProjectile(window, 1);
+		}
+		else if ((-80 < Trig2 < 80) && Fire2)
+			Fire2 = false;
 
 
 		window.clear();																				//Nettoie la frame
@@ -275,9 +359,12 @@ int main()
 		drawMap(window);
 		window.draw(fpsText);
 		window.draw(MousePos);
-		drawCible(window);
-		Vector2f LastPos = Objects[0]->sprite->getPosition();
-		Objects[0]->sprite->setPosition(SquarePos.x, SquarePos.y);
+		drawCible(window, xL1, yL1, 0);
+		LastPos[0] = Objects[0]->sprite->getPosition();
+		if (Objects[0]->playable)
+		{
+			Objects[0]->sprite->setPosition(SquarePos1.x, SquarePos1.y);
+		}
 		Objects[0]->box = Objects[0]->sprite->getGlobalBounds();
 
 		for (int i = 0; i < Objects.size(); i++) {
@@ -286,14 +373,12 @@ int main()
 
 		for (int i = 1; i < Objects.size(); i++)
 		{
-			auto mb = Objects[0]->sprite->getGlobalBounds();
-			auto extbounds = Objects[i]->sprite->getGlobalBounds();
 			if (Objects[0]->box.intersects(Objects[i]->box))
 			{
 				if (!Objects[i]->movable)	//Cas: Tank1 vs Wall
 				{
-					SquarePos = LastPos;
-					Objects[0]->sprite->setPosition(LastPos);
+					SquarePos1 = LastPos[0];
+					Objects[0]->sprite->setPosition(LastPos[0]);
 				}
 				else						//Cas: Tank vs Proj
 				{
