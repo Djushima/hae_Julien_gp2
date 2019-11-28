@@ -14,8 +14,7 @@ class Entity {
 public:
 	sf::Shape *sprite = nullptr;			//Rendu
 	sf::FloatRect box;						//Collision
-	bool playable = false;
-	bool movable = false;
+	bool movable = false, playable = false;
 
 	Entity(sf::Shape *forme, Vector2f Pos, sf::Color FillColor, sf::Color OutColor) {
 		this->sprite = forme;
@@ -92,7 +91,7 @@ static std::vector<Entity*> Objects;
 static std::vector<Projectile*> ProjectileTab;
 static std::vector<float> LastCible{ 45, 45 };
 static std::vector<Vector2f> LastPos{Vector2f(640,360) , Vector2f(0,0)};
-static Vector2f SquarePos1;
+static Vector2f SquarePos1, SquarePos2;
 const double PI = 3.141592653589793238463;
 
 b2Vec2 gravity(0.0f, 0.0f);
@@ -105,15 +104,25 @@ RectangleShape* initSquareRender(int x, int y) {
 }
 
 void initMap() {
-	auto Char = new Entity(
+	auto Char1 = new Entity(
 		initSquareRender(16, 16),
-		Vector2f(SquarePos1.x = 640, SquarePos1.y = 360),
+		Vector2f(SquarePos1.x = 425, SquarePos1.y = 360),
 		sf::Color(0xFF0101ff),
 		sf::Color(0x0107FFff));
-	Char->sprite->setOrigin(Vector2f(8, 8));
-	Char->movable = true;
-	Char->playable = true;
-	Objects.push_back(Char);
+	Char1->sprite->setOrigin(Vector2f(8, 8));
+	Char1->movable = true;
+	Char1->playable = true;
+	Objects.push_back(Char1);
+
+	auto Char2 = new Entity(
+		initSquareRender(16, 16),
+		Vector2f(SquarePos2.x = 850, SquarePos2.y = 360),
+		sf::Color(0x3550FFff),
+		sf::Color(0x0107FFff));
+	Char2->sprite->setOrigin(Vector2f(8, 8));
+	Char2->movable = true;
+	Char2->playable = true;
+	Objects.push_back(Char2);
 
 	auto NBorder = new Entity(
 		initSquareRender(1280, 20),  
@@ -188,7 +197,7 @@ void drawProjectile(sf::RenderWindow &win, int player) {
 		angle,
 		initSquareRender(7, 2),
 		Vector2f(Objects[player]->sprite->getPosition().x + cos(angle) * 15, Objects[player]->sprite->getPosition().y + sin(angle) * 15),
-		sf::Color(0x6EF3FFff),
+		player == 0 ? sf::Color(0xFF536Cff) : sf::Color(0x6EF3FFff),
 		sf::Color::Transparent);
 
 	Proj->sprite->setOrigin(Vector2f(0, 1));
@@ -229,7 +238,7 @@ int main()
 	fpsText.setFillColor(sf::Color::Red);
 
 	initMap();
-	float squareSpeed = 1;
+	float squareSpeed1 = 1, squareSpeed2 = 1;
 
 	float xR1 = 0, yR1 = 0, xL1 = 0, yL1 = 0, xR2 = 0, yR2 = 0, xL2 = 0, yL2 = 0, Trig1 = 0, Trig2 = 0; //Inputs J1 J2
 	bool Fire1 = false, Fire2 = false;
@@ -327,15 +336,27 @@ int main()
 
 		if (xR1 > 20 || xR1 < -20 || yR1 > 20 || yR1 < -20) //Mouvement J1
 		{
-			if (squareSpeed < 2)
-				squareSpeed += 0.05f;
-			SquarePos1.x += (xR1 / 100) * squareSpeed;
-			SquarePos1.y += (yR1 / 100) * squareSpeed;
+			if (squareSpeed1 < 2)
+				squareSpeed1 += 0.05f;
+			SquarePos1.x += (xR1 / 100) * squareSpeed1;
+			SquarePos1.y += (yR1 / 100) * squareSpeed1;
 			//Possible fonction de rotation du tank
 		}
 		else
-			if (squareSpeed > 0)
-				squareSpeed -= 0.3f;
+			if (squareSpeed1 > 0)
+				squareSpeed1 -= 0.3f;
+
+		if (xR2 > 20 || xR2 < -20 || yR2 > 20 || yR2 < -20) //Mouvement J2
+		{
+			if (squareSpeed2 < 2)
+				squareSpeed2 += 0.05f;
+			SquarePos2.x += (xR2 / 100) * squareSpeed1;
+			SquarePos2.y += (yR2 / 100) * squareSpeed1;
+			//Possible fonction de rotation du tank
+		}
+		else
+			if (squareSpeed2 > 0)
+				squareSpeed2 -= 0.3f;
 
 		if ((Trig1 > 80 || Trig1 < -80) && !Fire1) //Shoot J1
 		{
@@ -355,27 +376,49 @@ int main()
 
 
 		window.clear();																				//Nettoie la frame
-
 		drawMap(window);
 		window.draw(fpsText);
 		window.draw(MousePos);
-		drawCible(window, xL1, yL1, 0);
-		LastPos[0] = Objects[0]->sprite->getPosition();
-		if (Objects[0]->playable)
+			
+		for (int i = 0; i < 2; i++)
 		{
-			Objects[0]->sprite->setPosition(SquarePos1.x, SquarePos1.y);
+			switch (i)
+			{
+			case 0:
+				if (Objects[i]->playable)
+				{
+					Objects[i]->sprite->setPosition(SquarePos1.x, SquarePos1.y);
+					drawCible(window, xL1, yL1, i);
+					LastPos[i] = Objects[i]->sprite->getPosition();
+					Objects[i]->box = Objects[i]->sprite->getGlobalBounds();
+				}
+
+				break;
+
+			case 1:
+				if (Objects[i]->playable)
+				{
+					Objects[1]->sprite->setPosition(SquarePos2.x, SquarePos2.y);
+					drawCible(window, xL2, yL2, i);
+					LastPos[i] = Objects[i]->sprite->getPosition();
+					Objects[i]->box = Objects[i]->sprite->getGlobalBounds();
+				}
+				break;
+
+			default:
+				break;
+			}
 		}
-		Objects[0]->box = Objects[0]->sprite->getGlobalBounds();
 
 		for (int i = 0; i < Objects.size(); i++) {
 			Objects[i]->Move();
 		}
 
-		for (int i = 1; i < Objects.size(); i++)
+		for (int i = 0; i < Objects.size(); i++)
 		{
 			if (Objects[0]->box.intersects(Objects[i]->box))
 			{
-				if (!Objects[i]->movable)	//Cas: Tank1 vs Wall
+				if (!Objects[i]->movable || Objects[i]->playable)	//Cas: Tank1 vs Wall
 				{
 					SquarePos1 = LastPos[0];
 					Objects[0]->sprite->setPosition(LastPos[0]);
@@ -384,6 +427,21 @@ int main()
 				{
 					Objects.erase(Objects.begin()+i);
 					Objects.erase(Objects.begin());
+					break;
+				}
+			}
+
+			if (Objects[1]->box.intersects(Objects[i]->box) && i != 1)
+			{
+				if (!Objects[i]->movable || Objects[i]->playable)	//Cas: Tank1 vs Wall
+				{
+					SquarePos2 = LastPos[1];
+					Objects[1]->sprite->setPosition(LastPos[1]);
+				}
+				else						//Cas: Tank vs Proj
+				{
+					Objects.erase(Objects.begin() + i);
+					Objects.erase(Objects.begin() + 1);
 					break;
 				}
 			}
