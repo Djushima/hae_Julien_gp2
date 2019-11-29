@@ -7,6 +7,7 @@
 #include <SFML/Graphics.hpp>
 #include <direct.h>
 #include "App.h"
+#include <sys/stat.h>
 
 using namespace sf;
 
@@ -38,6 +39,9 @@ sf::Texture * whiteTex;
 static Transform s_Init;
 static std::vector<Transform> s_Trs;
 static std::vector<Turtle*> s_Turtles;
+struct stat Info;
+struct stat newInfo;
+
 
 static void startTransform() {
 	s_Init = Transform::Identity;
@@ -91,6 +95,133 @@ static void plotTurtle() {
 	s_Turtles.push_back(t);
 }
 
+enum TurtleCommand {
+	AV,
+	REC,
+	GROSSI,
+	L45,
+	R45
+};
+
+bool startsWith(const char * s0, const char * s1) {
+	if (*s0 == 0 && *s1 != 0)
+		return false;
+	if (*s1 == 0)
+		return true;
+	if (*s0 != *s1)
+		return false;
+	else
+		return startsWith(s0 + 1, s1 + 1);
+}
+
+static std::vector<TurtleCommand> cmd;
+static char data[1024];
+static void readScript() {
+	cmd.clear();
+	FILE * f = nullptr;
+	auto err = fopen_s(&f, "res/ScriptTortue.txt", "r");
+	if (f != nullptr) {
+		memset(data, 0, 1024);
+		fread(data, 1024, 1, f);
+		printf("Read file %s\n", data);
+		fclose(f);
+		if (stat("res/ScriptTortue.txt", &Info) != 0)
+			printf("Stat Error\n");
+
+		char * cur = data;
+
+		bool doContinue = true;
+		while (doContinue)
+		{
+			if (*cur == 0){
+				doContinue = false;
+				break;
+			}
+			else {
+				if (startsWith(cur, "AV"))
+				{
+					cmd.push_back(AV);
+				}
+				else if (startsWith(cur, "REC"))
+				{
+					cmd.push_back(REC);
+				}
+				else if (startsWith(cur, "GROSSI"))
+				{
+					cmd.push_back(GROSSI);
+				}
+				else if (startsWith(cur, "L45"))
+				{
+					cmd.push_back(L45);
+				}
+				else if (startsWith(cur, "R45"))
+				{
+					cmd.push_back(R45);
+				}
+				cur = strstr(cur, " ");
+				if (!cur)
+					break;
+				else
+					cur++;
+			}
+		}
+	}
+	else {
+		printf("Cannot Read file %s\n", "res/ScriptTortue.txt");
+	}
+}
+
+static void PlayTurtle(std::vector<TurtleCommand> cmd, int delta) {
+	for (int i = 0; i < cmd.size(); i++)
+	{
+		switch (cmd[i])
+		{
+		case AV:
+			TranslateY(delta);
+			plotTurtle();
+			break;
+
+		case REC:
+			TranslateY(-delta);
+			plotTurtle();
+			break;
+
+		case GROSSI:
+			scaleXY(2.0);
+			plotTurtle();
+			break;
+
+		case L45:
+			rotate(-45);
+			plotTurtle();
+			break;
+
+		case R45:
+			rotate(45);
+			plotTurtle();
+			break;
+		}
+	}
+}
+
+static void ResetTurtle() {
+	startTransform();
+
+	sf::Transform trs;
+	computeTransform(trs);
+
+	for (Turtle * t : s_Turtles) delete t;
+	s_Turtles.clear();
+
+	Turtle *t = new Turtle();
+	t->setTransform(trs);
+	s_Turtles.push_back(t);
+
+	readScript();
+};
+
+
+
 float rd() {
 	return 1.0 * rand() / RAND_MAX;
 }
@@ -133,6 +264,8 @@ int main()
 	unsigned int col = 0xffffffff;
 	whiteTex->update((const sf::Uint8*)&col, 1, 1, 0, 0);
 
+	readScript();
+	
 
 	sf::Text fpsText;
 	sf::Text MousePos;
@@ -144,9 +277,11 @@ int main()
 
 	startTransform();
 	plotTurtle();
+	int frame = 0;
 
 	while (window.isOpen())																			//tout le temps.
 	{
+		frame++;
 		MousePos.setString("MousePos: " + (std::to_string(sf::Mouse::getPosition(window).x) + " / " + (std::to_string(sf::Mouse::getPosition(window).y))));
 		if (every == 0)
 		{
@@ -184,6 +319,8 @@ int main()
 				if (event.key.code == sf::Keyboard::Right) { rotate(45); plotTurtle(); }
 				if (event.key.code == sf::Keyboard::Add) {  scaleXY(2.0); plotTurtle(); }
 				if (event.key.code == sf::Keyboard::Subtract) { scaleXY(0.5); plotTurtle(); }
+				if (event.key.code == sf::Keyboard::Enter) { PlayTurtle(cmd, delta); }
+				if (event.key.code == sf::Keyboard::R) { ResetTurtle(); }
 
 			}
 
@@ -199,6 +336,14 @@ int main()
 			RenderStates rs;
 			rs.transform = t->m_Trs;
 			window.draw(*t, rs);
+		}
+
+		if (frame % 60 == 0)
+		{
+			if (stat("res/ScriptTortue.txt", &newInfo) != 0)
+				printf("New Stat Error\n");
+			if (newInfo.st_mtime != Info.st_mtime)
+				ResetTurtle();
 		}
 
 

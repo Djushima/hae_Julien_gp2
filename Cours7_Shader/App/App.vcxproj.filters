@@ -47,4 +47,9 @@
       <Filter>Fichiers sources\res</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="res\ScriptTortue.txt">
+      <Filter>Fichiers sources\res</Filter>
+    </Text>
+  </ItemGroup>
 </Project>
