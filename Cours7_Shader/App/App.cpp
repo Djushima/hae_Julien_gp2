@@ -10,17 +10,90 @@
 
 using namespace sf;
 
+class Turtle : public sf::ConvexShape {
+public:
+	sf::Transform m_Trs;
+
+	Turtle() : sf::ConvexShape(3){
+		setFillColor(sf::Color(0x75FF30ff));
+		setOutlineThickness(2);
+		setOutlineColor(sf::Color(0xcd, 0xcd, 0xcd));
+
+		setPoint(0, Vector2f(0, -24));
+		setPoint(1, Vector2f(-16, 16));
+		setPoint(2, Vector2f(16, 16));
+	}
+
+	void setTransform(sf::Transform trs) {
+		m_Trs = trs;
+	}
+};
+
 static sf::Shader * simpleShader = nullptr;
 static sf::Shader * redShader = nullptr;
 static sf::Shader * bloomShader = nullptr;
 static sf::Shader * blurShader = nullptr;
 sf::Texture * whiteTex;
 
+static Transform s_Init;
+static std::vector<Transform> s_Trs;
+static std::vector<Turtle*> s_Turtles;
+
+static void startTransform() {
+	s_Init = Transform::Identity;
+	s_Init.translate(500, 500);
+	s_Init.rotate(90);
+}
+
+static void TranslateY(float dy) {
+	sf::Transform res;
+	res.translate(0, dy);
+	s_Trs.push_back(res);
+}
+
+static void scaleXY(float dxy) {
+	sf::Transform res;
+	res.scale(dxy, dxy);
+	s_Trs.push_back(res);
+}
+
+static void rotate(float degree) {
+	sf::Transform res;
+	res.rotate(degree);
+	s_Trs.push_back(res);
+}
+
+static void computeTransform(sf::Transform & result, int step = -1) {
+	sf::Transform inter;
+
+	inter.combine(s_Init);
+
+	if (step <= -1) {
+		for (sf::Transform t : s_Trs) {
+			inter = inter.combine(t);
+		}
+	}
+	else {
+		step--;
+		for (sf::Transform t : s_Trs) {
+			inter = inter.combine(t);
+			if (step <= 0)break;
+		}
+	}
+	result = inter;
+}
+
+static void plotTurtle() {
+	sf::Transform cur;
+	computeTransform(cur, s_Trs.size() - 1);
+	Turtle *t = new Turtle();
+	t->setTransform(cur);
+	s_Turtles.push_back(t);
+}
+
 float rd() {
 	return 1.0 * rand() / RAND_MAX;
 }
-
-Vector2i P1, P2, P3, P4;
 
 int main()
 {
@@ -69,6 +142,8 @@ int main()
 	MousePos.setFillColor(sf::Color::Blue);
 	fpsText.setFillColor(sf::Color::Red);
 
+	startTransform();
+	plotTurtle();
 
 	while (window.isOpen())																			//tout le temps.
 	{
@@ -86,11 +161,30 @@ int main()
 		{
 			if (event.type == sf::Event::KeyReleased)
 			{
-				if (event.key.code == sf::Keyboard::I)
-					printf("Instant fps %f\n", fps[(step-1)%4]);
 
-				if (event.key.code == sf::Keyboard::F)
-					printf("fps %f\n", 0.25*(fps[0] + fps[1] + fps[2] + fps[3]));
+				if (event.key.code == sf::Keyboard::Space)
+				{
+					startTransform();
+
+					sf::Transform trs;
+					computeTransform(trs);
+
+					for (Turtle * t : s_Turtles) delete t;
+					s_Turtles.clear();
+
+					Turtle *t = new Turtle();
+					t->setTransform(trs);
+					s_Turtles.push_back(t);
+				}
+
+				auto delta = 32;
+				if (event.key.code == sf::Keyboard::Up) { TranslateY(-delta); plotTurtle(); }
+				if (event.key.code == sf::Keyboard::Down) { TranslateY(delta); plotTurtle(); }
+				if (event.key.code == sf::Keyboard::Left) { rotate(-45); plotTurtle(); }
+				if (event.key.code == sf::Keyboard::Right) { rotate(45); plotTurtle(); }
+				if (event.key.code == sf::Keyboard::Add) {  scaleXY(2.0); plotTurtle(); }
+				if (event.key.code == sf::Keyboard::Subtract) { scaleXY(0.5); plotTurtle(); }
+
 			}
 
 			if (event.type == sf::Event::Closed)
@@ -100,11 +194,19 @@ int main()
 		window.clear();																				//Nettoie la frame																			//On dessine la forme.
 		window.draw(fpsText);
 
-		sf::RectangleShape sh(Vector2f(64, 64));
+		for (Turtle * t: s_Turtles)
+		{
+			RenderStates rs;
+			rs.transform = t->m_Trs;
+			window.draw(*t, rs);
+		}
+
+
+		/*sf::RectangleShape sh(Vector2f(64, 64));
 		sh.setPosition(50, 50);
 		sh.setTexture(whiteTex);
 		simpleShader->setUniform("time", Clock.getElapsedTime().asSeconds());
-		window.draw(sh, simpleShader);
+		window.draw(sh, simpleShader);*/
 
 		window.display();																			//Ca dessine et attends la vsync.
 
