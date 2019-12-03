@@ -16,6 +16,9 @@
     <Filter Include="Fichiers sources\Box2D">
       <UniqueIdentifier>{39f8f42a-4b75-4d0c-a1a4-8575e1687fc2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Fichiers sources\Textures">
+      <UniqueIdentifier>{6bd46a73-f49c-4889-bdef-679d946cf335}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -314,5 +317,13 @@
     <ClCompile Include="..\..\Lib_Box2D\Box2D\Rope\b2Rope.cpp">
       <Filter>Fichiers sources\Box2D</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Textures\B_Button.png">
+      <Filter>Fichiers sources\Textures</Filter>
+    </Image>
+    <Image Include="Textures\A_Button.png">
+      <Filter>Fichiers sources\Textures</Filter>
+    </Image>
   </ItemGroup>
 </Project>

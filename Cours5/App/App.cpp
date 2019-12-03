@@ -14,7 +14,7 @@ class Entity {
 public:
 	sf::Shape *sprite = nullptr;			//Rendu
 	sf::FloatRect box;						//Collision
-	bool movable = false, playable = false;
+	bool movable = false, playable = false, destroyed = false;
 
 	Entity(sf::Shape *forme, Vector2f Pos, sf::Color FillColor, sf::Color OutColor) {
 		this->sprite = forme;
@@ -31,13 +31,21 @@ public:
 	}
 
 	void _draw(sf::RenderWindow &win) {
-		win.draw(*sprite);
+		if (sprite != nullptr)
+			win.draw(*sprite);
 	}
 
 	virtual void Move() {
 	}
 
 	virtual void Rebond(Entity* Object2) {
+	}
+
+	void Destroyed(std::vector<Entity*> Objects, int player) {
+		delete Objects[player]->sprite;
+		Objects[player]->box = FloatRect(-10, -10, 0, 0);
+		Objects[player]->sprite = nullptr;
+		destroyed = true;
 	}
 };
 
@@ -94,6 +102,12 @@ static std::vector<Vector2f> LastPos{Vector2f(640,360) , Vector2f(0,0)};
 static Vector2f SquarePos1, SquarePos2;
 const double PI = 3.141592653589793238463;
 
+RectangleShape PlayButton, QuitButton;
+CircleShape a_Button, b_Button;
+Text Title, PlayText, QuitText;
+Texture * A_ButtonTex = new Texture(), * B_ButtonTex = new Texture();
+Font font;
+
 b2Vec2 gravity(0.0f, 0.0f);
 b2World world(gravity);
 
@@ -105,7 +119,7 @@ RectangleShape* initSquareRender(int x, int y) {
 
 void initMap() {
 	auto Char1 = new Entity(
-		initSquareRender(16, 16),
+		initSquareRender(15, 15),
 		Vector2f(SquarePos1.x = 425, SquarePos1.y = 360),
 		sf::Color(0xFF0101ff),
 		sf::Color(0x0107FFff));
@@ -115,7 +129,7 @@ void initMap() {
 	Objects.push_back(Char1);
 
 	auto Char2 = new Entity(
-		initSquareRender(16, 16),
+		initSquareRender(15, 15),
 		Vector2f(SquarePos2.x = 850, SquarePos2.y = 360),
 		sf::Color(0x3550FFff),
 		sf::Color(0x0107FFff));
@@ -191,7 +205,6 @@ void drawCible(sf::RenderWindow &win, float X, float Y, int player)
 }
 
 void drawProjectile(sf::RenderWindow &win, int player) {
-	//auto angle = atan2(sf::Mouse::getPosition(win).y - Objects[player]->sprite->getPosition().y, sf::Mouse::getPosition(win).x - Objects[player]->sprite->getPosition().x);
 	auto angle = LastCible[player];
 	auto Proj = new Projectile(
 		angle,
@@ -204,16 +217,59 @@ void drawProjectile(sf::RenderWindow &win, int player) {
 	Objects.push_back(Proj);
 }
 
+void initMenu() {
+	font.loadFromFile("arial.ttf");
+	Title.setString("Un jeu de Tank sous acide");
+	Title.setStyle(sf::Text::Underlined + sf::Text::Italic);
+	Title.setFont(font);
+	Title.setFillColor(sf::Color::Red);
+	Title.setPosition(1280 / 2.8, 720 / 7);
+
+	PlayButton.setSize(Vector2f(1280 / 3, 720 / 6));
+	PlayButton.setPosition(Vector2f(1280 / 3, 720 / 4));
+	PlayText.setString("Jouer!");
+	PlayText.setFont(font);
+	PlayText.setFillColor(sf::Color::Black);
+	PlayText.setPosition(Vector2f(PlayButton.getGlobalBounds().left + PlayButton.getGlobalBounds().width / 2.2, PlayButton.getGlobalBounds().top + PlayButton.getGlobalBounds().height / 3));
+
+	QuitButton.setSize(Vector2f(1280 / 3, 720 / 6));
+	QuitButton.setPosition(Vector2f(1280 / 3, 720 / 2));
+	QuitText.setString("Quitter");
+	QuitText.setFont(font);
+	QuitText.setFillColor(sf::Color::Black);
+	QuitText.setPosition(Vector2f(QuitButton.getGlobalBounds().left + QuitButton.getGlobalBounds().width / 2.2, QuitButton.getGlobalBounds().top + QuitButton.getGlobalBounds().height / 3));
+
+	a_Button.setRadius(PlayButton.getLocalBounds().height / 3);
+	a_Button.setPosition(PlayButton.getPosition().x + 20, PlayButton.getPosition().y + 18);
+	A_ButtonTex->loadFromFile("Textures/A_Button.png");
+	A_ButtonTex->setSmooth(true);
+	a_Button.setTexture(A_ButtonTex);
+
+	b_Button.setRadius(QuitButton.getLocalBounds().height / 3);
+	b_Button.setPosition(QuitButton.getPosition().x + 20, QuitButton.getPosition().y + 18);
+	B_ButtonTex->loadFromFile("Textures/B_Button.png");
+	B_ButtonTex->setSmooth(true);
+	b_Button.setTexture(B_ButtonTex);
+}
+
+void DrawMainMenu(sf::RenderWindow &win, Text fps) {
+	win.draw(Title);
+	win.draw(PlayButton);
+	win.draw(QuitButton);
+	win.draw(PlayText);
+	win.draw(QuitText);
+	win.draw(a_Button);
+	win.draw(b_Button);
+	win.draw(fps);
+	win.display();
+}
+
 int main()
 {
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 8;
 
-	sf::RenderWindow window(sf::VideoMode(1280,720), "SFML works!", sf::Style::Default, settings);	//Creer une fenetre appelé "SFML Works" de taille 200x200)
-	sf::CircleShape shape(100.f, 2 * 3.141569 * 100);												//Creer en mémoire un rond de taille 100f
-	shape.setFillColor(sf::Color::Green);															//Set la couleur du rond a Vert
-	shape.setOutlineThickness(4);
-	shape.setOutlineColor(sf::Color(0x4887E8));
+	sf::RenderWindow window(sf::VideoMode(1280,720), "I LOVE TANKS!", sf::Style::Default, settings);	//Creer une fenetre appelé "SFML Works" de taille 200x200)
 	window.setVerticalSyncEnabled(true);
 
 	sf::Clock Clock;
@@ -226,36 +282,71 @@ int main()
 	int step = 0;
 	int every = 10;
 
-	sf::Font font;
-	font.loadFromFile("arial.ttf");
-
 	sf::Text fpsText;
-	sf::Text MousePos;
-	MousePos.setPosition(975, 0);
-	MousePos.setFont(font);
+	sf::Text EndText;
+	EndText.setPosition(1280/2, 720/3);
+	EndText.setFont(font);
+	EndText.setStyle(sf::Text::Italic);
 	fpsText.setFont(font);
-	MousePos.setFillColor(sf::Color::Blue);
 	fpsText.setFillColor(sf::Color::Red);
 
+	initMenu();
 	initMap();
-	float squareSpeed1 = 1, squareSpeed2 = 1;
 
+	float squareSpeed1 = 1, squareSpeed2 = 1;
 	float xR1 = 0, yR1 = 0, xL1 = 0, yL1 = 0, xR2 = 0, yR2 = 0, xL2 = 0, yL2 = 0, Trig1 = 0, Trig2 = 0; //Inputs J1 J2
-	bool Fire1 = false, Fire2 = false;
+	bool Fire1 = false, Fire2 = false, EndGame = false, MainMenu = true;
 
 
 	while (window.isOpen())																			//tout le temps.
 	{
-		MousePos.setString("MousePos: " + (std::to_string(sf::Mouse::getPosition(window).x) + " / " + (std::to_string(sf::Mouse::getPosition(window).y))));
+		sf::Event event;
 		if (every == 0)
 		{
 			fpsText.setString("FPS: " + std::to_string(fps[(step - 1) % 4]));
 			every = 100;
 		}
 		every--;
-
 		frameStart = Clock.getElapsedTime();
-		sf::Event event;																			//recup les event clavier/pad	
+
+		while (MainMenu)
+		{
+			window.clear();
+			if (every == 0)
+			{
+				fpsText.setString("FPS: " + std::to_string(fps[(step - 1) % 4]));
+				every = 100;
+			}
+			every--;
+			frameStart = Clock.getElapsedTime();
+
+			DrawMainMenu(window, fpsText); //MainMenu
+
+			fps[step % 4] = 1.0 / (frameStart - prevFrameStart).asSeconds();
+			prevFrameStart = frameStart;
+			step++;
+
+			window.pollEvent(event);
+			if (event.type == sf::Event::JoystickButtonReleased){
+				if (event.joystickButton.joystickId == 0 && event.joystickButton.button == 0)
+					MainMenu = false;
+				if (event.joystickButton.joystickId == 0 && event.joystickButton.button == 1){
+					window.close();
+					MainMenu = false;
+				}
+			}
+		}
+
+		if ((Objects[0]->destroyed || Objects[1]->destroyed) && !EndGame)
+		{
+			Objects[0]->destroyed ? EndText.setFillColor(sf::Color(0x5A94FFff)) : EndText.setFillColor(sf::Color(0xFF5245ff));
+			Objects[0]->destroyed ? EndText.setString("	   Joueur Bleu gagne !\n Press R to Retry, Q to Quit") : EndText.setString("    Joueur Rouge gagne !\n Press R to Retry, Q to Quit");
+			FloatRect TextRect = EndText.getLocalBounds();
+			EndText.setOrigin(TextRect.left + TextRect.width / 2, TextRect.top + TextRect.height / 2);
+			EndGame = true;
+		}
+
+																					//recup les event clavier/pad	
 		while (window.pollEvent(event))
 		{
 			if (event.type == sf::Event::KeyReleased)
@@ -265,6 +356,20 @@ int main()
 
 				if (event.key.code == sf::Keyboard::F)
 					printf("fps %f\n", 0.25*(fps[0] + fps[1] + fps[2] + fps[3]));
+
+				if (event.key.code == sf::Keyboard::R && EndGame) {
+					EndGame = false;
+					Objects.clear();
+					window.clear();
+					initMap();
+					squareSpeed1 = 1, squareSpeed2 = 1;
+					xR1 = 0, yR1 = 0, xL1 = 0, yL1 = 0, xR2 = 0, yR2 = 0, xL2 = 0, yL2 = 0, Trig1 = 0, Trig2 = 0;
+					Fire1 = false, Fire2 = false, EndGame = false;
+					EndText.setString("");
+				}
+
+				if (event.key.code == sf::Keyboard::Q && EndGame)
+					window.close();
 
 				/*if (event.key.code == sf::Keyboard::Space)
 					drawProjectile(window);*/
@@ -363,7 +468,7 @@ int main()
 			Fire1 = true;
 			drawProjectile(window, 0);
 		}
-		else if ((-10 < Trig1 && Trig1 < 10) && Fire1)
+		else if ((-10 < Trig1 && Trig1 < 10) && Fire1 && !Objects[0]->destroyed)
 			Fire1 = false;
 
 		if ((Trig2 > 80 || Trig2 < -80) && !Fire2) //Shoot J2
@@ -371,21 +476,21 @@ int main()
 			Fire2 = true;
 			drawProjectile(window, 1);
 		}
-		else if ((-80 < Trig2 < 80) && Fire2)
+		else if ((-80 < Trig2 < 80) && Fire2 && !Objects[1]->destroyed)
 			Fire2 = false;
-
 
 		window.clear();																				//Nettoie la frame
 		drawMap(window);
 		window.draw(fpsText);
-		window.draw(MousePos);
+		window.draw(EndText);
+
 			
 		for (int i = 0; i < 2; i++)
 		{
 			switch (i)
 			{
 			case 0:
-				if (Objects[i]->playable)
+				if (Objects[i]->playable && Objects[i]->sprite != nullptr)
 				{
 					Objects[i]->sprite->setPosition(SquarePos1.x, SquarePos1.y);
 					drawCible(window, xL1, yL1, i);
@@ -396,7 +501,7 @@ int main()
 				break;
 
 			case 1:
-				if (Objects[i]->playable)
+				if (Objects[i]->playable && Objects[i]->sprite != nullptr)
 				{
 					Objects[1]->sprite->setPosition(SquarePos2.x, SquarePos2.y);
 					drawCible(window, xL2, yL2, i);
@@ -414,9 +519,9 @@ int main()
 			Objects[i]->Move();
 		}
 
-		for (int i = 0; i < Objects.size(); i++)
+		for (int i = 2; i < Objects.size(); i++)
 		{
-			if (Objects[0]->box.intersects(Objects[i]->box))
+			if (Objects[0]->box.intersects(Objects[i]->box) && Objects[0]->playable)
 			{
 				if (!Objects[i]->movable || Objects[i]->playable)	//Cas: Tank1 vs Wall
 				{
@@ -426,12 +531,13 @@ int main()
 				else						//Cas: Tank vs Proj
 				{
 					Objects.erase(Objects.begin()+i);
-					Objects.erase(Objects.begin());
+					Objects[0]->Destroyed(Objects, 0);
+					Fire1 = true;
 					break;
 				}
 			}
 
-			if (Objects[1]->box.intersects(Objects[i]->box) && i != 1)
+			if (Objects[1]->box.intersects(Objects[i]->box) && i != 1 && Objects[1]->playable)
 			{
 				if (!Objects[i]->movable || Objects[i]->playable)	//Cas: Tank1 vs Wall
 				{
@@ -441,13 +547,14 @@ int main()
 				else						//Cas: Tank vs Proj
 				{
 					Objects.erase(Objects.begin() + i);
-					Objects.erase(Objects.begin() + 1);
+					Objects[1]->Destroyed(Objects, 1);
+					Fire2 = true;
 					break;
 				}
 			}
 
 			
-			for (int j = 1; j < Objects.size(); j++)
+			for (int j = 2; j < Objects.size(); j++)
 			{
 				if (i != j && Objects[i]->box.intersects(Objects[j]->box))
 					if (Objects[i]->movable && !Objects[j]->movable) //Cas: Proj vs Wall = Rebond || Destroy
