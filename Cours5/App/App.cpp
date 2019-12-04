@@ -335,6 +335,11 @@ int main()
 					MainMenu = false;
 				}
 			}
+			if (event.type == sf::Event::Closed)
+			{
+				MainMenu = false;
+				window.close();
+			}
 		}
 
 		if ((Objects[0]->destroyed || Objects[1]->destroyed) && !EndGame)
