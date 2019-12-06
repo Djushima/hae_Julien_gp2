@@ -407,7 +407,13 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\A_Button.png" />
+    <Image Include="Textures\Background.png" />
+    <Image Include="Textures\Blue tank.png" />
+    <Image Include="Textures\bullet1.png" />
+    <Image Include="Textures\bullet2.png" />
     <Image Include="Textures\B_Button.png" />
+    <Image Include="Textures\Red tank.png" />
+    <Image Include="Textures\wall.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

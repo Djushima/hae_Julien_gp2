@@ -63,7 +63,7 @@ public:
 	Entity(forme, Pos, FillColor, OutColor) {
 		this->dir = Vector2f(cos(angle), sin(angle));
 		this->Bounced = false;
-		this->sprite->setRotation(angle * (180 / PI));
+		this->sprite->setRotation(angle * (180 / PI) -90);
 		this->x = this->sprite->getPosition().x;
 		this->y = this->sprite->getPosition().y;
 		this->movable = true;
@@ -105,11 +105,8 @@ const double PI = 3.141592653589793238463;
 RectangleShape PlayButton, QuitButton;
 CircleShape a_Button, b_Button;
 Text Title, PlayText, QuitText;
-Texture * A_ButtonTex = new Texture(), * B_ButtonTex = new Texture();
+Texture * A_ButtonTex = new Texture(), *B_ButtonTex = new Texture(), *BG = new Texture(), * Wall = new Texture(), * Bullet1 = new Texture(), * Bullet2 = new Texture();
 Font font;
-
-b2Vec2 gravity(0.0f, 0.0f);
-b2World world(gravity);
 
 
 RectangleShape* initSquareRender(int x, int y) {
@@ -118,6 +115,21 @@ RectangleShape* initSquareRender(int x, int y) {
 }
 
 void initMap() {
+	if (!Wall->loadFromFile("Textures/Wall.png"))
+		printf("Wall Texture Error Load");
+	Wall->setSmooth(true);
+	Wall->setRepeated(true);
+	if (!BG->loadFromFile("Textures/Background.png"))
+		printf("Wall Texture Error Load");
+	BG->setSmooth(true);
+	BG->setRepeated(true);
+	if (!Bullet1->loadFromFile("Textures/bullet1.png"))
+		printf("Wall Texture Error Load");
+	Bullet1->setSmooth(true);
+	if (!Bullet2->loadFromFile("Textures/bullet2.png"))
+		printf("Wall Texture Error Load");
+	Bullet2->setSmooth(true);
+
 	auto Char1 = new Entity(
 		initSquareRender(15, 15),
 		Vector2f(SquarePos1.x = 425, SquarePos1.y = 360),
@@ -139,35 +151,57 @@ void initMap() {
 	Objects.push_back(Char2);
 
 	auto NBorder = new Entity(
-		initSquareRender(1280, 20),  
+		initSquareRender(1280, 50),  
 		Vector2f(0, 0), 
-		sf::Color(0xB226FFff), 
-		sf::Color::Transparent);
+		sf::Color(0xFFFFFFff), 
+		sf::Color::Black);
+	NBorder->sprite->setTexture(Wall);
+	NBorder->sprite->setTextureRect(IntRect(0, 0, 1280, 128));
+	NBorder->box = NBorder->sprite->getGlobalBounds();
 	Objects.push_back(NBorder);
 
 	auto SBorder = new Entity(
-		initSquareRender(1280, 20), 
-		Vector2f(0, 700), 
-		sf::Color(0xB226FFff), 
-		sf::Color::Transparent);
+		initSquareRender(1280, 50), 
+		Vector2f(0, 670), 
+		sf::Color(0xFFFFFFff), 
+		sf::Color::Black);
+	SBorder->sprite->setTexture(Wall);
+	SBorder->sprite->setTextureRect(IntRect(0, 0, 1280, 128));
+	SBorder->box = SBorder->sprite->getGlobalBounds();
 	Objects.push_back(SBorder);
 
 	auto EBorder = new Entity(
-		initSquareRender(20, 720), 
-		Vector2f(0, 0), 
-		sf::Color(0xB226FFff), 
-		sf::Color::Transparent);
+		initSquareRender(620, 50), 
+		Vector2f(1280, 50), 
+		sf::Color(0xFFFFFFff), 
+		sf::Color::Black);
+	EBorder->sprite->setTexture(Wall);
+	EBorder->sprite->setTextureRect(IntRect(0, 0, 1280, 128));
+	EBorder->sprite->setRotation(90);
+	EBorder->box = EBorder->sprite->getGlobalBounds();
 	Objects.push_back(EBorder);
 
 	auto WBorder = new Entity(
-		initSquareRender(20, 720), 
-		Vector2f(1260, 0),
-		sf::Color(0xB226FFff),
-		sf::Color::Transparent);
+		initSquareRender(620, 50), 
+		Vector2f(50, 50),
+		sf::Color(0xFFFFFFff),
+		sf::Color::Black);
+	WBorder->sprite->setTexture(Wall);
+	WBorder->sprite->setTextureRect(IntRect(0, 0, 1280, 128));
+	WBorder->sprite->setRotation(90);
+	WBorder->box = WBorder->sprite->getGlobalBounds();
 	Objects.push_back(WBorder);
 }
 
 void drawMap(sf::RenderWindow &win) {
+	RectangleShape Background;
+	Background.setSize(Vector2f(1280, 720));
+	Background.setTexture(BG);
+
+	auto k = 256 * 8;
+	Background.setTextureRect(IntRect(0, 0, k, k));
+	
+	win.draw(Background);
 	for (int i = 0; i < Objects.size(); i++)
 		Objects[i]->_draw(win);
 }
@@ -208,18 +242,18 @@ void drawProjectile(sf::RenderWindow &win, int player) {
 	auto angle = LastCible[player];
 	auto Proj = new Projectile(
 		angle,
-		initSquareRender(7, 2),
-		Vector2f(Objects[player]->sprite->getPosition().x + cos(angle) * 15, Objects[player]->sprite->getPosition().y + sin(angle) * 15),
-		player == 0 ? sf::Color(0xFF536Cff) : sf::Color(0x6EF3FFff),
+		initSquareRender(10, 16),
+		Vector2f(Objects[player]->sprite->getPosition().x + cos(angle) *15, Objects[player]->sprite->getPosition().y + sin(angle) *15),
+		sf::Color(0xFFFFFFff),
 		sf::Color::Transparent);
-
-	Proj->sprite->setOrigin(Vector2f(0, 1));
+	player == 0 ? Proj->sprite->setTexture(Bullet1) : Proj->sprite->setTexture(Bullet2);
+	Proj->sprite->setOrigin(Vector2f(5, 0));
 	Objects.push_back(Proj);
 }
 
 void initMenu() {
 	font.loadFromFile("arial.ttf");
-	Title.setString("Un jeu de Tank sous acide");
+	Title.setString("Un jeu de Tank");
 	Title.setStyle(sf::Text::Underlined + sf::Text::Italic);
 	Title.setFont(font);
 	Title.setFillColor(sf::Color::Red);
@@ -524,9 +558,9 @@ int main()
 			Objects[i]->Move();
 		}
 
-		for (int i = 2; i < Objects.size(); i++)
+		for (int i = 0; i < Objects.size(); i++)
 		{
-			if (Objects[0]->box.intersects(Objects[i]->box) && Objects[0]->playable)
+			if (i != 0 && Objects[0]->box.intersects(Objects[i]->box) && Objects[0]->playable)
 			{
 				if (!Objects[i]->movable || Objects[i]->playable)	//Cas: Tank1 vs Wall
 				{
@@ -542,7 +576,7 @@ int main()
 				}
 			}
 
-			if (Objects[1]->box.intersects(Objects[i]->box) && i != 1 && Objects[1]->playable)
+			if (i != 1 && Objects[1]->box.intersects(Objects[i]->box) && i != 1 && Objects[1]->playable)
 			{
 				if (!Objects[i]->movable || Objects[i]->playable)	//Cas: Tank1 vs Wall
 				{
@@ -561,7 +595,7 @@ int main()
 			
 			for (int j = 2; j < Objects.size(); j++)
 			{
-				if (i != j && Objects[i]->box.intersects(Objects[j]->box))
+				if (i != j && i != 1 && i != 0 && Objects[i]->box.intersects(Objects[j]->box))
 					if (Objects[i]->movable && !Objects[j]->movable) //Cas: Proj vs Wall = Rebond || Destroy
 					{
 						Projectile * proj = dynamic_cast<Projectile*>(Objects[i]);

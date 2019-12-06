@@ -325,5 +325,23 @@
     <Image Include="Textures\A_Button.png">
       <Filter>Fichiers sources\Textures</Filter>
     </Image>
+    <Image Include="Textures\Red tank.png">
+      <Filter>Fichiers sources\Textures</Filter>
+    </Image>
+    <Image Include="Textures\Blue tank.png">
+      <Filter>Fichiers sources\Textures</Filter>
+    </Image>
+    <Image Include="Textures\wall.png">
+      <Filter>Fichiers sources\Textures</Filter>
+    </Image>
+    <Image Include="Textures\Background.png">
+      <Filter>Fichiers sources\Textures</Filter>
+    </Image>
+    <Image Include="Textures\bullet1.png">
+      <Filter>Fichiers sources\Textures</Filter>
+    </Image>
+    <Image Include="Textures\bullet2.png">
+      <Filter>Fichiers sources\Textures</Filter>
+    </Image>
   </ItemGroup>
 </Project>
