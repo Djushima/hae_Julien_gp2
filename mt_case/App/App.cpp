@@ -7,6 +7,7 @@
 #include <direct.h>
 #include <functional>
 
+#include "Entity.hpp"
 #include "Lib.hpp"
 #include "Game.hpp"
 #include "Particle.h"
@@ -40,7 +41,7 @@ static std::vector<sf::Glsl::Vec2>offsetsY;
 static Game g;
 
 //offset must be normalized by texture size
-static void getKernelOffsets( float dx, std::vector<float> & _kernel, std::vector<sf::Glsl::Vec2> & _offsets, float offsetScale = 1.0f,bool isHoriz = true) {
+static void getKernelOffsets(float dx, std::vector<float> & _kernel, std::vector<sf::Glsl::Vec2> & _offsets, float offsetScale = 1.0f, bool isHoriz = true) {
 	int kernel_size = (int)(dx / 0.65f + 0.5f) * 2 + 1;
 
 	_kernel.clear();
@@ -60,7 +61,7 @@ static void getKernelOffsets( float dx, std::vector<float> & _kernel, std::vecto
 	}
 }
 
-static void blur(float dx, sf::Texture* source, sf::Shader*_blurShader, sf::RenderTexture * destX, sf::RenderTexture * destFinal ) {
+static void blur(float dx, sf::Texture* source, sf::Shader*_blurShader, sf::RenderTexture * destX, sf::RenderTexture * destFinal) {
 
 	source->setSmooth(true);
 	destX->setSmooth(true);
@@ -87,7 +88,7 @@ static void blur(float dx, sf::Texture* source, sf::Shader*_blurShader, sf::Rend
 	}
 
 	{
-		getKernelOffsets(dx, kernelY, offsets,1.0,false);
+		getKernelOffsets(dx, kernelY, offsets, 1.0, false);
 		int nbSamples = kernelY.size();
 		_blurShader->setUniform("samples", nbSamples);
 		for (int i = 0; i < nbSamples; i++)
@@ -95,7 +96,7 @@ static void blur(float dx, sf::Texture* source, sf::Shader*_blurShader, sf::Rend
 		_blurShader->setUniformArray("kernel", kernelY.data(), nbSamples);
 		_blurShader->setUniformArray("offsets", offsets.data(), nbSamples);
 
-		sf::Sprite sprXY( destX->getTexture());
+		sf::Sprite sprXY(destX->getTexture());
 		_blurShader->setUniform("texture", destX->getTexture());
 		_blurShader->setUniform("srcMul", sf::Glsl::Vec4(1, 1, 1, 1));
 
@@ -119,8 +120,8 @@ int main() {
 
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 2;
-	
-	sf::RenderWindow window(sf::VideoMode(1280, 720), "SFML works!", sf::Style::Default , settings);
+
+	sf::RenderWindow window(sf::VideoMode(1280, 720), "SFML works!", sf::Style::Default, settings);
 	window.setVerticalSyncEnabled(true);
 
 	sf::View initialView = window.getDefaultView();
@@ -139,6 +140,7 @@ int main() {
 	if (font->loadFromFile("res/DejaVuSans.ttf") == false) {
 		printf("no such font\n");
 	}
+	g.font = font;
 
 	if (!sf::Shader::isAvailable())
 		printf("no shader avail\n");
@@ -158,13 +160,13 @@ int main() {
 	blurShader = new Shader();
 	if (!blurShader->loadFromFile("res/simple.vert", "res/blur.frag"))
 		printf("unable to load shaders\n");
-	
-	
+
+
 	whiteTex = new Texture();
 	if (!whiteTex->create(1, 1)) printf("tex crea failed\n");
 	whiteTex->setSmooth(true);
 	unsigned int col = 0xffffffff;
-	whiteTex->update((const sf::Uint8*)&col,1,1,0,0);
+	whiteTex->update((const sf::Uint8*)&col, 1, 1, 0, 0);
 
 	sf::Texture testTex;
 	//testTex.create(256, 256);
@@ -191,9 +193,9 @@ int main() {
 
 	sf::Clock deltaClock;
 
-	sf::Color bgColor(7,15,33);
+	sf::Color bgColor(7, 15, 33);
 	char windowTitle[256] = "maWindow";
-	float color[3] = { bgColor.r/255.0f, bgColor.g / 255.0f, bgColor.b / 255.0f };
+	float color[3] = { bgColor.r / 255.0f, bgColor.g / 255.0f, bgColor.b / 255.0f };
 
 	ActionList al;
 	double winWidth = window.getSize().x;
@@ -218,102 +220,115 @@ int main() {
 	walls[3].setPosition(0, winHeight - 1);
 	walls[3].setSize(Vector2f(winWidth, 16));
 
+	g.init();
+
 	while (window.isOpen())//on passe tout le temps DEBUT DE LA FRAME 
 	{
 		sf::Event event;//recup les evenement clavier/pad
 		frameStart = clock.getElapsedTime();
 		window.setView(initialView);
 
-		while (window.pollEvent(event))	{
+		while (window.pollEvent(event)) {
 
 			Vector2f mousePos = sf::Vector2f(sf::Mouse::getPosition(window));
 
-			switch (event.type ) {
+			switch (event.type) {
 
-				case sf::Event::MouseMoved :
+			case sf::Event::MouseButtonPressed:
+			{
+				auto CW = Entity::CELL_WIDTH;
+				int cx = mousePos.x / CW;
+				int cy = mousePos.y / CW;
+
+				Game::me->togglePlatform(cx, cy);
+				break;
+			}
+
+			case sf::Event::MouseMoved:
+			{
+				int life = 30;
+				float sp = Lib::rd() + 0.5;
 				{
-					int life = 30;
-					float sp = Lib::rd() + 0.5;
-					{
-						auto c = new CircleShape(8, 64);
-						c->setOrigin(8, 8);
-						c->setPosition(mousePos);
-						c->setFillColor(sf::Color(0xFF5C371a));
-						auto p = new FadingParticle(c);
-						p->life = 30;
-						p->speed.y = sp;
-						p->bhv = Particle::applySpeed;
-						g.pvec.push_back(p);
-						
-					}
+					auto c = new CircleShape(8, 64);
+					c->setOrigin(8, 8);
+					c->setPosition(mousePos);
+					c->setFillColor(sf::Color(0xFF5C371a));
+					auto p = new FadingParticle(c);
+					p->life = 30;
+					p->speed.y = sp;
+					p->bhv = Particle::applySpeed;
+					g.pvec.push_back(p);
 
-					{
-						auto c = new CircleShape( 2,32);
-						c->setOrigin(2, 2);
-						c->setPosition(mousePos);
-						c->setFillColor(sf::Color(0xE88A38ff));
-
-						auto p = new FadingParticle(c);
-						p->life = 30;
-						p->speed.y = sp;
-						p->bhv = Particle::applySpeed;
-						g.pvec.push_back(p);
-					}
-					
-					break;
 				}
 
-				case sf::Event::Resized:
-					initialView.setSize({
-									   static_cast<float>(event.size.width),
-									   static_cast<float>(event.size.height)
-						});
-					window.setView(initialView);
-					winTex.create(window.getSize().x, window.getSize().y);
-					delete destX;
-					destX = new sf::RenderTexture();
-					destX->create(window.getSize().x, window.getSize().y);
-					destX->clear(sf::Color(0, 0, 0, 0));
-					delete destFinal;
-					destFinal = new sf::RenderTexture();
-					destFinal->create(window.getSize().x, window.getSize().y);
-					destFinal->clear(sf::Color(0, 0, 0, 0));
-					break;
+				{
+					auto c = new CircleShape(2, 32);
+					c->setOrigin(2, 2);
+					c->setPosition(mousePos);
+					c->setFillColor(sf::Color(0xE88A38ff));
 
-				case sf::Event::KeyReleased:
-					
-					break;
+					auto p = new FadingParticle(c);
+					p->life = 30;
+					p->speed.y = sp;
+					p->bhv = Particle::applySpeed;
+					g.pvec.push_back(p);
+				}
 
-				case sf::Event::KeyPressed:
-					if (event.key.code == sf::Keyboard::F1) {
-						p0.x = mousePos.x;
-						p0.y = mousePos.y;
-						showSegment++;
-					}
+				break;
+			}
 
-					if (event.key.code == sf::Keyboard::F2) {
-						p1.x = mousePos.x;
-						p1.y = mousePos.y;
-						showSegment++;
-					}
+			case sf::Event::Resized:
+				initialView.setSize({
+								   static_cast<float>(event.size.width),
+								   static_cast<float>(event.size.height)
+					});
+				window.setView(initialView);
+				winTex.create(window.getSize().x, window.getSize().y);
+				delete destX;
+				destX = new sf::RenderTexture();
+				destX->create(window.getSize().x, window.getSize().y);
+				destX->clear(sf::Color(0, 0, 0, 0));
+				delete destFinal;
+				destFinal = new sf::RenderTexture();
+				destFinal->create(window.getSize().x, window.getSize().y);
+				destFinal->clear(sf::Color(0, 0, 0, 0));
+				break;
 
-					if (event.key.code == sf::Keyboard::Space) {
-						mainView = initialView;
-						mainView.move(Vector2f(Lib::dice(-8, 8), Lib::dice(-8, 8)));
-						window.setView(mainView);
-					}
-					break;
+			case sf::Event::KeyReleased:
 
-				case sf::Event::Closed:
-					window.close();
-					break;
+				break;
 
-				default:
-					break;
+			case sf::Event::KeyPressed:
+				if (event.key.code == sf::Keyboard::F1) {
+					p0.x = mousePos.x;
+					p0.y = mousePos.y;
+					showSegment++;
+				}
+
+				if (event.key.code == sf::Keyboard::F2) {
+					p1.x = mousePos.x;
+					p1.y = mousePos.y;
+					showSegment++;
+				}
+
+				if (event.key.code == sf::Keyboard::Space) {
+					mainView = initialView;
+					mainView.move(Vector2f(Lib::dice(-8, 8), Lib::dice(-8, 8)));
+					window.setView(mainView);
+				}
+				break;
+
+			case sf::Event::Closed:
+				window.close();
+				break;
+
+			default:
+				break;
 			}
 		}
 
-		
+
+
 
 		sf::Time dt = deltaClock.restart();
 
@@ -332,7 +347,7 @@ int main() {
 		g.update(dt.asSeconds());
 		al.update(dt.asSeconds());
 
-		window.clear( sf::Color(3,8,10) );//nettoie la frame
+		window.clear(sf::Color(3, 8, 10));//nettoie la frame
 
 		/////////////
 		/////////////
@@ -356,7 +371,7 @@ int main() {
 			sh.setPosition(p0.x, p0.y);
 			double angle = atan2(p1.y - p0.y, p1.x - p0.x);
 			angle -= Lib::PI * 0.5;
-			sh.setRotation( angle / (2.0 * 3.14156) * 360.0);
+			sh.setRotation(angle / (2.0 * 3.14156) * 360.0);
 			window.draw(sh);
 
 			sf::RectangleShape origin;
@@ -364,7 +379,7 @@ int main() {
 			origin.setSize(Vector2f(4, 4));
 			origin.setPosition(p0.x, p0.y);
 			window.draw(origin);
-			
+
 			Vector2f speed = p1 - p0;
 			b2Vec2 inter;
 			b2Vec2 normal;
@@ -410,7 +425,7 @@ int main() {
 			winTex.update(window);
 			destX->clear(sf::Color(0, 0, 0, 255));
 			destFinal->clear(sf::Color(0, 0, 0, 255));
-			blur(blurWidth, &winTex, blurShader, destX,destFinal);
+			blur(blurWidth, &winTex, blurShader, destX, destFinal);
 			sf::Sprite sp(destFinal->getTexture());
 			sf::RenderStates rs;
 
@@ -418,20 +433,20 @@ int main() {
 
 			bloomShader->setUniform("texture", destFinal->getTexture());
 			bloomShader->setUniform("bloomPass", 0.6f);
-			bloomShader->setUniform("bloomMul", sf::Glsl::Vec4(1.3f,1.3f,1.0f, 1.0f) );
+			bloomShader->setUniform("bloomMul", sf::Glsl::Vec4(1.3f, 1.3f, 1.0f, 1.0f));
 
 			rs.shader = bloomShader;
 			sf::Color c = sp.getColor();
-			c.a =(int)(c.a* 0.8);
+			c.a = (int)(c.a* 0.8);
 			sp.setColor(c);
 
-			window.draw(sp,rs);
+			window.draw(sp, rs);
 			blurWidth += (1.0f / 60.0f) * 2;
 
 			if (blurWidth >= 64)
 				blurWidth = 54;
 		}
-		
+
 		window.display();//ca dessine et ca attend la vsync
 
 		fps[step % 4] = 1.0f / (frameStart - prevFrameStart).asSeconds();
