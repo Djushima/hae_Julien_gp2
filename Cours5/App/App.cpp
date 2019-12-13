@@ -85,6 +85,7 @@ public:
 		auto Obj1Pos = this->sprite->getPosition();
 		auto Obj2Pos = Object2->sprite->getPosition();
 		auto Obj2Ofs = Object2->box;
+
 		if ((Obj1Pos.x > Obj2Pos.x + Obj2Ofs.width) || (Obj1Pos.x < Obj2Pos.x))
 			this->dir = Vector2f(-this->dir.x, this->dir.y);
 		else if ((Obj1Pos.y > Obj2Pos.y + Obj2Ofs.height) || (Obj1Pos.y < Obj2Pos.y))
@@ -98,6 +99,7 @@ public:
 static std::vector<Entity*> Objects;
 static std::vector<Projectile*> ProjectileTab;
 static std::vector<float> LastCible{ 45, 45 };
+static std::vector<float> LastRot{ 45, 45 };
 static std::vector<Vector2f> LastPos{Vector2f(640,360) , Vector2f(0,0)};
 static Vector2f SquarePos1, SquarePos2;
 const double PI = 3.141592653589793238463;
@@ -183,12 +185,13 @@ void initMap() {
 
 	auto WBorder = new Entity(
 		initSquareRender(620, 50), 
-		Vector2f(50, 50),
+		Vector2f(0, 50),
 		sf::Color(0xFFFFFFff),
 		sf::Color::Black);
 	WBorder->sprite->setTexture(Wall);
 	WBorder->sprite->setTextureRect(IntRect(0, 0, 1280, 128));
 	WBorder->sprite->setRotation(90);
+	WBorder->sprite->setOrigin(0, 50);
 	WBorder->box = WBorder->sprite->getGlobalBounds();
 	Objects.push_back(WBorder);
 }
@@ -243,7 +246,7 @@ void drawProjectile(sf::RenderWindow &win, int player) {
 	auto Proj = new Projectile(
 		angle,
 		initSquareRender(10, 16),
-		Vector2f(Objects[player]->sprite->getPosition().x + cos(angle) *15, Objects[player]->sprite->getPosition().y + sin(angle) *15),
+		Vector2f(Objects[player]->sprite->getPosition().x + cos(angle) *20, Objects[player]->sprite->getPosition().y + sin(angle) *20),
 		sf::Color(0xFFFFFFff),
 		sf::Color::Transparent);
 	player == 0 ? Proj->sprite->setTexture(Bullet1) : Proj->sprite->setTexture(Bullet2);
@@ -330,6 +333,7 @@ int main()
 	float squareSpeed1 = 1, squareSpeed2 = 1;
 	float xR1 = 0, yR1 = 0, xL1 = 0, yL1 = 0, xR2 = 0, yR2 = 0, xL2 = 0, yL2 = 0, Trig1 = 0, Trig2 = 0; //Inputs J1 J2
 	bool Fire1 = false, Fire2 = false, EndGame = false, MainMenu = true;
+	Vector2f tank1Dir, tank2Dir;
 
 
 	while (window.isOpen())																			//tout le temps.
@@ -484,7 +488,7 @@ int main()
 				squareSpeed1 += 0.05f;
 			SquarePos1.x += (xR1 / 100) * squareSpeed1;
 			SquarePos1.y += (yR1 / 100) * squareSpeed1;
-			//Possible fonction de rotation du tank
+			tank1Dir = Vector2f(xR1, yR1);
 		}
 		else
 			if (squareSpeed1 > 0)
@@ -496,7 +500,7 @@ int main()
 				squareSpeed2 += 0.05f;
 			SquarePos2.x += (xR2 / 100) * squareSpeed1;
 			SquarePos2.y += (yR2 / 100) * squareSpeed1;
-			//Possible fonction de rotation du tank
+			tank2Dir = Vector2f(xR2, yR2);
 		}
 		else
 			if (squareSpeed2 > 0)
@@ -531,6 +535,8 @@ int main()
 			case 0:
 				if (Objects[i]->playable && Objects[i]->sprite != nullptr)
 				{
+					Objects[i]->sprite->setRotation(atan2(tank1Dir.y, tank1Dir.x) * (180 / PI));
+					LastRot[i] = Objects[i]->sprite->getRotation();
 					Objects[i]->sprite->setPosition(SquarePos1.x, SquarePos1.y);
 					drawCible(window, xL1, yL1, i);
 					LastPos[i] = Objects[i]->sprite->getPosition();
@@ -542,6 +548,8 @@ int main()
 			case 1:
 				if (Objects[i]->playable && Objects[i]->sprite != nullptr)
 				{
+					Objects[i]->sprite->setRotation(atan2(tank2Dir.y, tank2Dir.x) * (180 / PI));
+					LastRot[i] = Objects[i]->sprite->getRotation();
 					Objects[1]->sprite->setPosition(SquarePos2.x, SquarePos2.y);
 					drawCible(window, xL2, yL2, i);
 					LastPos[i] = Objects[i]->sprite->getPosition();
