@@ -16,12 +16,9 @@ public:
 	sf::FloatRect box;						//Collision
 	bool movable = false, playable = false, destroyed = false;
 
-	Entity(sf::Shape *forme, Vector2f Pos, sf::Color FillColor, sf::Color OutColor) {
+	Entity(sf::Shape *forme, Vector2f Pos) {
 		this->sprite = forme;
 		this->sprite->setPosition(Pos);
-		this->sprite->setFillColor(FillColor);
-		this->sprite->setOutlineColor(OutColor);
-		this->sprite->setOutlineThickness(1);
 		this->box = forme->getGlobalBounds();
 	}
 
@@ -59,8 +56,8 @@ private:
 public:
 	bool Bounced;
 
-	Projectile(float angle, sf::Shape *forme, Vector2f Pos, sf::Color FillColor, sf::Color OutColor) : 
-	Entity(forme, Pos, FillColor, OutColor) {
+	Projectile(float angle, sf::Shape *forme, Vector2f Pos) : 
+	Entity(forme, Pos) {
 		this->dir = Vector2f(cos(angle), sin(angle));
 		this->Bounced = false;
 		this->sprite->setRotation(angle * (180 / PI) -90);
@@ -107,7 +104,8 @@ const double PI = 3.141592653589793238463;
 RectangleShape PlayButton, QuitButton;
 CircleShape a_Button, b_Button;
 Text Title, PlayText, QuitText;
-Texture * A_ButtonTex = new Texture(), *B_ButtonTex = new Texture(), *BG = new Texture(), * Wall = new Texture(), * Bullet1 = new Texture(), * Bullet2 = new Texture();
+Texture *A_ButtonTex = new Texture(), *B_ButtonTex = new Texture(), *BG = new Texture(), *Wall = new Texture(), 
+		*Bullet1 = new Texture(), *Bullet2 = new Texture(), *tank1Tex = new Texture(), *tank2Tex = new Texture();
 Font font;
 
 
@@ -116,7 +114,7 @@ RectangleShape* initSquareRender(int x, int y) {
 	return Square;
 }
 
-void initMap() {
+void initTextures() {
 	if (!Wall->loadFromFile("Textures/Wall.png"))
 		printf("Wall Texture Error Load");
 	Wall->setSmooth(true);
@@ -131,52 +129,52 @@ void initMap() {
 	if (!Bullet2->loadFromFile("Textures/bullet2.png"))
 		printf("Wall Texture Error Load");
 	Bullet2->setSmooth(true);
+	if (!tank1Tex->loadFromFile("Textures/Red tank.png"))
+		printf("Tank1 Texture Error Load");
+	tank1Tex->setSmooth(true);
+	if (!tank2Tex->loadFromFile("Textures/Blue tank.png"))
+		printf("Tank2 Texture Error Load");
+	tank2Tex->setSmooth(true);
+}
 
+void initMap() {
 	auto Char1 = new Entity(
-		initSquareRender(15, 15),
-		Vector2f(SquarePos1.x = 425, SquarePos1.y = 360),
-		sf::Color(0xFF0101ff),
-		sf::Color(0x0107FFff));
-	Char1->sprite->setOrigin(Vector2f(8, 8));
+		initSquareRender(60, 40),
+		Vector2f(SquarePos1.x = 425, SquarePos1.y = 360));
+	Char1->sprite->setTexture(tank1Tex);
+	Char1->sprite->setOrigin(Vector2f(30, 20));
 	Char1->movable = true;
 	Char1->playable = true;
 	Objects.push_back(Char1);
 
 	auto Char2 = new Entity(
-		initSquareRender(15, 15),
-		Vector2f(SquarePos2.x = 850, SquarePos2.y = 360),
-		sf::Color(0x3550FFff),
-		sf::Color(0x0107FFff));
-	Char2->sprite->setOrigin(Vector2f(8, 8));
+		initSquareRender(60, 40),
+		Vector2f(SquarePos2.x = 850, SquarePos2.y = 360));
+	Char2->sprite->setTexture(tank2Tex); 
+	Char2->sprite->setOrigin(Vector2f(30, 20));
 	Char2->movable = true;
 	Char2->playable = true;
 	Objects.push_back(Char2);
 
 	auto NBorder = new Entity(
-		initSquareRender(1280, 50),  
-		Vector2f(0, 0), 
-		sf::Color(0xFFFFFFff), 
-		sf::Color::Black);
+		initSquareRender(1280, 50),
+		Vector2f(0, 0));
 	NBorder->sprite->setTexture(Wall);
 	NBorder->sprite->setTextureRect(IntRect(0, 0, 1280, 128));
 	NBorder->box = NBorder->sprite->getGlobalBounds();
 	Objects.push_back(NBorder);
 
 	auto SBorder = new Entity(
-		initSquareRender(1280, 50), 
-		Vector2f(0, 670), 
-		sf::Color(0xFFFFFFff), 
-		sf::Color::Black);
+		initSquareRender(1280, 50),
+		Vector2f(0, 670));
 	SBorder->sprite->setTexture(Wall);
 	SBorder->sprite->setTextureRect(IntRect(0, 0, 1280, 128));
 	SBorder->box = SBorder->sprite->getGlobalBounds();
 	Objects.push_back(SBorder);
 
 	auto EBorder = new Entity(
-		initSquareRender(620, 50), 
-		Vector2f(1280, 50), 
-		sf::Color(0xFFFFFFff), 
-		sf::Color::Black);
+		initSquareRender(620, 50),
+		Vector2f(1280, 50));
 	EBorder->sprite->setTexture(Wall);
 	EBorder->sprite->setTextureRect(IntRect(0, 0, 1280, 128));
 	EBorder->sprite->setRotation(90);
@@ -184,10 +182,8 @@ void initMap() {
 	Objects.push_back(EBorder);
 
 	auto WBorder = new Entity(
-		initSquareRender(620, 50), 
-		Vector2f(0, 50),
-		sf::Color(0xFFFFFFff),
-		sf::Color::Black);
+		initSquareRender(620, 50),
+		Vector2f(0, 50));
 	WBorder->sprite->setTexture(Wall);
 	WBorder->sprite->setTextureRect(IntRect(0, 0, 1280, 128));
 	WBorder->sprite->setRotation(90);
@@ -209,23 +205,6 @@ void drawMap(sf::RenderWindow &win) {
 		Objects[i]->_draw(win);
 }
 
-/*void drawCibleSouris(sf::RenderWindow &win) {
-	sf::Vertex line[] =
-	{
-		sf::Vertex(Objects[0]->sprite->getPosition()),
-		sf::Vertex(sf::Vector2f(sf::Mouse::getPosition(win)))
-	};
-	sf::CircleShape cible(5);
-	line->color = sf::Color(0xFF0101ff);
-	cible.setOutlineColor(sf::Color(0xE80C2Eff));
-	cible.setFillColor(sf::Color::Transparent);
-	cible.setOutlineThickness(1);
-	cible.setOrigin(5, 5);
-	cible.setPosition(sf::Vector2f(sf::Mouse::getPosition(win)));
-	win.draw(cible);
-	win.draw(line, 2, sf::Lines);
-}*/
-
 void drawCible(sf::RenderWindow &win, float X, float Y, int player)
 {
 	sf::Shape *Canon = initSquareRender(10, 5);
@@ -246,9 +225,7 @@ void drawProjectile(sf::RenderWindow &win, int player) {
 	auto Proj = new Projectile(
 		angle,
 		initSquareRender(10, 16),
-		Vector2f(Objects[player]->sprite->getPosition().x + cos(angle) *20, Objects[player]->sprite->getPosition().y + sin(angle) *20),
-		sf::Color(0xFFFFFFff),
-		sf::Color::Transparent);
+		Vector2f(Objects[player]->sprite->getPosition().x + cos(angle) * 50, Objects[player]->sprite->getPosition().y + sin(angle) * 50));
 	player == 0 ? Proj->sprite->setTexture(Bullet1) : Proj->sprite->setTexture(Bullet2);
 	Proj->sprite->setOrigin(Vector2f(5, 0));
 	Objects.push_back(Proj);
@@ -328,6 +305,7 @@ int main()
 	fpsText.setFillColor(sf::Color::Red);
 
 	initMenu();
+	initTextures();
 	initMap();
 
 	float squareSpeed1 = 1, squareSpeed2 = 1;
@@ -413,9 +391,6 @@ int main()
 
 				if (event.key.code == sf::Keyboard::Q && EndGame)
 					window.close();
-
-				/*if (event.key.code == sf::Keyboard::Space)
-					drawProjectile(window);*/
 			}
 
 			if (event.type == sf::Event::JoystickMoved) //Joystick Input Update
@@ -444,7 +419,7 @@ int main()
 						xL2 = event.joystickMove.position;
 					if (event.joystickMove.axis == sf::Joystick::Axis::V)
 						yL2 = event.joystickMove.position;
-					if (event.joystickMove.axis == sf::Joystick::Axis::R)
+					if (event.joystickMove.axis == sf::Joystick::Axis::Z)
 						Trig2 = event.joystickMove.position;
 				}
 			}
@@ -452,35 +427,6 @@ int main()
 			if (event.type == sf::Event::Closed)
 				window.close();
 		}
-
-
-		/*if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-		{
-			if (squareSpeed < 3)
-				squareSpeed += 0.05f;
-			SquarePos.x -= squareSpeed;
-		}
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-		{
-			if (squareSpeed < 3)
-				squareSpeed += 0.05f;
-			SquarePos.x += squareSpeed;
-		}
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-		{
-			if (squareSpeed < 3)
-				squareSpeed += 0.05f;
-			SquarePos.y -= squareSpeed;
-		}
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-		{
-			if (squareSpeed < 3)
-				squareSpeed += 0.05f;
-			SquarePos.y += squareSpeed;
-		}
-		else
-			if (squareSpeed > 0)
-				squareSpeed -= 0.3f;*/
 
 		if (xR1 > 20 || xR1 < -20 || yR1 > 20 || yR1 < -20) //Mouvement J1
 		{
