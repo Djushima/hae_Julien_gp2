@@ -3,6 +3,7 @@
 
 Game* Game::me = nullptr;
 static bool wasPressed[sf::Keyboard::KeyCount];
+int CoverCount = 0;
 
 void Game::init() {
 	RectangleShape *sh = new RectangleShape(Vector2f(12, 24));
@@ -15,58 +16,31 @@ void Game::init() {
 	player = ent;
 	me = this;
 
-	memset(wasPressed, 0, sizeof(wasPressed));
+	for (int i = 0; i < (1280 / Entity::CELL_WIDTH); i++)
+	{
+		if (i == 0 || i == (1280 / Entity::CELL_WIDTH)-1)
+			for (int j = 0; j < (720 / Entity::CELL_WIDTH)-1; j++)
+			{
+				platforms.push_back(Vector2i(i, j));
+			}
 
-	makePlatforms();
-}
-
-void Game::makePlatforms() {
-	int cScreenWidth = 1280 / Entity::CELL_WIDTH;
-	int cScreenHeight = 720 / Entity::CELL_WIDTH;
-
-
-	platforms.push_back(Vector2i(8, cScreenHeight - 1));
-	platforms.push_back(Vector2i(8, cScreenHeight - 2));
+		for (int j = 0; j < (720 / Entity::CELL_WIDTH); j++)
+		{
+			if (j == 0 || j == (720 / Entity::CELL_WIDTH)-1)
+			{
+				platforms.push_back(Vector2i(i, j));
+			}
+		}
+	}
 }
 
 void Game::update(double dt)
 {
-	auto max_lat_speed = 0.75;
-	auto lat_acc = 0.075;
-
-
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-		player->dx += lat_acc;
-		if (player->dx > max_lat_speed) player->dx = max_lat_speed;
-		if (player->getState() == ES_IDLE) player->changeState(ES_RUNNING);
-	}
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-		player->dx -= lat_acc;
-		if (player->dx < -max_lat_speed) player->dx = -max_lat_speed;
-		if (player->getState() == ES_IDLE) player->changeState(ES_RUNNING);
-	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)
-		&& !wasPressed[sf::Keyboard::Up]
-		&& player->getState() != ES_FALLING) {
-		player->dy -= 0.45;
-		player->applyGravity = true;
-		player->changeState(ES_FALLING);
-	}
-
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
-		player->setPosePixel(100, 600);
-		player->dx = player->dy = 0.0f;
-		player->applyGravity = false;
-		player->changeState(ES_IDLE);
-	}
-
 	for (auto it = evec.begin(); it != evec.end();) {
 		Entity * ent = *it;
 		ent->update(dt);
 		it++;
 	}
-
-	wasPressed[sf::Keyboard::Up] = sf::Keyboard::isKeyPressed(sf::Keyboard::Up);
 }
 
 void Game::draw(RenderWindow & win)
@@ -97,11 +71,6 @@ void Game::draw(RenderWindow & win)
 			it++;
 		}
 	}
-
-	RectangleShape line(Vector2f(1000, 1));
-	line.setFillColor(sf::Color::Green);
-	line.setPosition(100, 600);
-	win.draw(line);
 }
 
 bool Game::willCollide(Entity * end, int cx, int cy)
@@ -116,8 +85,12 @@ bool Game::willCollide(Entity * end, int cx, int cy)
 	else if (cy >= cScreenHeight) return true;
 
 	for (Vector2i & cell : platforms)
+	{
 		if (cell.x == cx && cell.y == cy)
 			return true;
+		if (cell.x == cx && cell.y == cy - 1)
+			return true;
+	}
 
 	return false;
 }

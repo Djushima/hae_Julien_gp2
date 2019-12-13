@@ -30,7 +30,6 @@ public:
 	}
 
 	void init();
-	void makePlatforms();
 	void update(double dt);
 	void draw(RenderWindow & win);
 	bool willCollide(Entity * end, int cx, int cy);

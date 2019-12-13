@@ -9,8 +9,9 @@ using namespace sf;
 enum EntityState
 {
 	ES_IDLE,
+	ES_WALKING,
 	ES_RUNNING,
-	ES_FALLING,
+	ES_COVER,
 };
 
 class Entity {
@@ -29,10 +30,10 @@ public:
 
 	float gy = 0.03;
 
-	bool applyGravity = false;
-
 	float pixelX = 0.0;
 	float pixelY = 0.0;
+
+	int stateLife = 0;
 
 	sf::Shape * spr;
 
@@ -56,76 +57,7 @@ public:
 		syncCoord();
 	}
 
-	void update(double dt) {
-		rx += dx;
-		if (dx > 0) {
-			while (rx > 1) { 
-				if (!willCollide(cx+1, cy)) {
-					cx++;
-					rx--;
-				}
-				else {
-					dx = 0;
-					rx = 0.9;
-					break;
-				}
-			}
-		}
-		else if (dx < 0) {
-			while (rx < 0) {
-				if (!willCollide(cx-1, cy)) {
-					cx--;
-					rx++;
-				}
-				else {
-					dx = 0;
-					rx = 0.1;
-					break;
-				}
-			}
-		}
-		dx *= 0.92;
-		if (abs(dx) < 0.05)
-			dx = 0;
-
-		if (applyGravity) dy += gy;
-
-		ry += dy;
-		if (dy > 0) {
-			while (ry > 1)
-			{
-				if (!willCollide(cx, cy + 1)) {
-					cy++;
-					ry--;
-				}
-				else {
-					dy = 0;
-					ry = 0.99;
-					break;
-				}
-			}
-		}
-		else if (dy < 0) {
-			while (ry < 0) {
-				if (!willCollide(cx, cy - 1)) {
-					cy--;
-					ry++;
-				}
-				else {
-					dy = 0;
-					ry = 0.01;
-					break;
-				}
-			}
-		}
-		if (dy >= 2.0f)
-			dy = 2.0f;
-
-		if (dx == 0 && dy == 0 && getState() != ES_IDLE)
-			changeState(ES_IDLE);
-
-		syncCoord();
-	}
+	void update(double dt);
 
 	void updateCollision() {
 
@@ -141,6 +73,9 @@ public:
 
 	EntityState getState() { return state; }
 	void changeState(EntityState nes);
+	void updateState();
+	void updateControls();
 
 	bool willCollide(int cx, int cy);
+	std::string getStateName();
 };
