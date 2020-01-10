@@ -116,6 +116,8 @@ static RectangleShape shp;
 
 static RectangleShape walls[4];
 
+static sf::VertexArray dijline;
+
 int main() {
 
 	sf::ContextSettings settings;
@@ -221,6 +223,10 @@ int main() {
 	walls[3].setSize(Vector2f(winWidth, 16));
 
 	g.init();
+	g.Dijk = new Dijkstra;
+	dijline = sf::VertexArray(sf::PrimitiveType::LineStrip);
+	dijline.clear();
+	int MovIndex = 0;
 
 	while (window.isOpen())//on passe tout le temps DEBUT DE LA FRAME 
 	{
@@ -274,6 +280,24 @@ int main() {
 					g.pvec.push_back(p);
 				}
 
+				if (g.Dijk->computed)
+				{
+					std::vector<Vector2f> result;
+					bool found = g.Dijk->FindPath(result, Vector2f(
+						(int)(mousePos.x / Entity::CELL_WIDTH),
+						(int)(mousePos.y / Entity::CELL_WIDTH)));
+
+					dijline.clear();
+					if (found) {
+						for (const sf::Vector2f & vtx : result)
+							dijline.append(
+								sf::Vertex(
+									sf::Vector2f(
+									(vtx.x + 0.5) * Entity::CELL_WIDTH,
+										(vtx.y + 0.5) * Entity::CELL_WIDTH), sf::Color::Red));
+					}
+				}
+
 				break;
 			}
 
@@ -295,7 +319,30 @@ int main() {
 				break;
 
 			case sf::Event::KeyReleased:
+				if (event.key.code == sf::Keyboard::F9) {
+					vector<Vector2f> graph;
+					int size = 30;
+					for (int x = g.player->cx - 10; x < g.player->cx + 10; x++) {
+						for (int y = g.player->cy - 10; y < g.player->cy + 10; y++) {
+							if (!g.willCollide(x, y))
+								graph.push_back(Vector2f(x, y));
+						}
+					}
+					printf("len:%d\n", graph.size());
+					g.Dijk->compute(graph, Vector2f(g.player->cx, g.player->cy));
+					printf("computed\n");
 
+					/*if (MovIndex != result.size())
+					{
+						g.player->cx = result[MovIndex].x;
+						g.player->cy = result[MovIndex].y;
+						g.player->syncCoord();
+						MovIndex++;
+					}
+					else
+						MovIndex = 0;*/
+					
+				}
 				break;
 
 			case sf::Event::KeyPressed:
@@ -418,6 +465,7 @@ int main() {
 			window.draw(walls[i]);
 		}
 
+		window.draw(dijline);
 		window.draw(myFpsCounter);
 
 		///Draw all bloomed before this

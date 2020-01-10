@@ -12,6 +12,7 @@
 #include <Box2D/Box2D.h>
 
 #include "Entity.hpp"
+#include "Dijkstra.hpp"
 
 using namespace sf;
 
@@ -24,6 +25,7 @@ public:
 	sf::Font * font;
 	static Game * me;
 	Entity * player;
+	Dijkstra * Dijk;
 
 	Game() {
 
@@ -32,6 +34,6 @@ public:
 	void init();
 	void update(double dt);
 	void draw(RenderWindow & win);
-	bool willCollide(Entity * end, int cx, int cy);
+	bool willCollide(int cx, int cy);
 	void togglePlatform(int cx, int cy);
 };
