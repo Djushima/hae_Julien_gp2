@@ -168,6 +168,12 @@
     <ClInclude Include="..\..\Lib_Box2D\Box2D\Box2D.h">
       <Filter>Fichiers sources\Box2D</Filter>
     </ClInclude>
+    <ClInclude Include="Entity.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Projectile.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -316,6 +322,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Lib_Box2D\Box2D\Rope\b2Rope.cpp">
       <Filter>Fichiers sources\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Projectile.cpp">
+      <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

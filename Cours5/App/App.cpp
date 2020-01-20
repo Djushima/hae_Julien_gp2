@@ -1,97 +1,15 @@
 // App.cpp : Ce fichier contient la fonction 'main'. L'exécution du programme commence et se termine à cet endroit.
 //
 
-#include "pch.h"
-#include "Lib.hpp"
 #include <Box2D/Box2D.h>
-#include <iostream>
 #include <SFML/Graphics.hpp>
 #include <direct.h>
+#include <iostream>
+#include "Lib.hpp"
+#include "Entity.hpp"
+#include "Projectile.hpp"
 
 using namespace sf;
-
-class Entity {
-public:
-	sf::Shape *sprite = nullptr;			//Rendu
-	sf::FloatRect box;						//Collision
-	bool movable = false, playable = false, destroyed = false;
-
-	Entity(sf::Shape *forme, Vector2f Pos) {
-		this->sprite = forme;
-		this->sprite->setPosition(Pos);
-		this->box = forme->getGlobalBounds();
-	}
-
-	~Entity(){
-		if (sprite) delete sprite;
-		sprite = nullptr;
-	}
-
-	void _draw(sf::RenderWindow &win) {
-		if (sprite != nullptr)
-			win.draw(*sprite);
-	}
-
-	virtual void Move() {
-	}
-
-	virtual void Rebond(Entity* Object2) {
-	}
-
-	void Destroyed(std::vector<Entity*> Objects, int player) {
-		delete Objects[player]->sprite;
-		Objects[player]->box = FloatRect(-10, -10, 0, 0);
-		Objects[player]->sprite = nullptr;
-		destroyed = true;
-	}
-};
-
-class Projectile : public Entity {
-private:
-	const double PI = 3.141592653589793238463;
-	const int speed = 4;
-	Vector2f dir;
-	float x, y;
-
-public:
-	bool Bounced;
-
-	Projectile(float angle, sf::Shape *forme, Vector2f Pos) : 
-	Entity(forme, Pos) {
-		this->dir = Vector2f(cos(angle), sin(angle));
-		this->Bounced = false;
-		this->sprite->setRotation(angle * (180 / PI) -90);
-		this->x = this->sprite->getPosition().x;
-		this->y = this->sprite->getPosition().y;
-		this->movable = true;
-	}
-
-	~Projectile(){
-		if (dir != Vector2f(0, 0)) dir = Vector2f(0, 0);
-	}
-
-	void Move() {
-		x += dir.x * speed;
-		y += dir.y * speed;
-		this->sprite->setPosition(x,y);
-		this->box = this->sprite->getGlobalBounds();
-		Entity::Move();
-	}
-
-	void Rebond(Entity* Object2) {
-		auto Obj1Pos = this->sprite->getPosition();
-		auto Obj2Pos = Object2->sprite->getPosition();
-		auto Obj2Ofs = Object2->box;
-
-		if ((Obj1Pos.x > Obj2Pos.x + Obj2Ofs.width) || (Obj1Pos.x < Obj2Pos.x))
-			this->dir = Vector2f(-this->dir.x, this->dir.y);
-		else if ((Obj1Pos.y > Obj2Pos.y + Obj2Ofs.height) || (Obj1Pos.y < Obj2Pos.y))
-			this->dir = Vector2f(this->dir.x, -this->dir.y);
-		this->sprite->setRotation(PI - this->sprite->getRotation());
-		this->Bounced = true;
-	}
-
-};
 
 static std::vector<Entity*> Objects;
 static std::vector<Projectile*> ProjectileTab;
