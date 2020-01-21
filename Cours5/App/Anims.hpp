@@ -32,7 +32,11 @@ public:
 	}
 
 	~Animation() {
-		
+		if (SpriteSheet) delete SpriteSheet;
+		SpriteSheet = nullptr;
+		if (sprite) delete sprite;
+		sprite = nullptr;
+		printf("DELETED\n");
 	}
 
 	void initAnim() {
@@ -57,7 +61,7 @@ public:
 		while (completed = false) {
 			if (clock.getElapsedTime().asSeconds() > 0.5f)
 			{
-				if (spriteRect.left == spritesheetSize)
+				if (/*spriteRect.left == spritesheetSize*/true)
 					completed = true;
 				else spriteRect.left += spriteSize; /*SpriteSize*/
 
@@ -65,6 +69,7 @@ public:
 				clock.restart();
 			}
 		}
+		delete this;
 	};
 
 };
