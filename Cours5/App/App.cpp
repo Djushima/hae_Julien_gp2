@@ -23,7 +23,8 @@ RectangleShape PlayButton, QuitButton;
 CircleShape a_Button, b_Button;
 Text Title, PlayText, QuitText;
 Texture *A_ButtonTex = new Texture(), *B_ButtonTex = new Texture(), *BG = new Texture(), *Wall = new Texture(), 
-		*Bullet1 = new Texture(), *Bullet2 = new Texture(), *tank1Tex = new Texture(), *tank2Tex = new Texture();
+		*Bullet1 = new Texture(), *Bullet2 = new Texture(), *tank1Tex = new Texture(), *tank2Tex = new Texture(),
+		*CanonTank1Tex = new Texture, *CanonTank2Tex = new Texture;
 Font font;
 
 
@@ -47,12 +48,18 @@ void initTextures() {
 	if (!Bullet2->loadFromFile("Textures/bullet2.png"))
 		printf("Wall Texture Error Load");
 	Bullet2->setSmooth(true);
-	if (!tank1Tex->loadFromFile("Textures/Red tank.png"))
+	if (!tank1Tex->loadFromFile("Textures/Red tank -canon.png"))
 		printf("Tank1 Texture Error Load");
 	tank1Tex->setSmooth(true);
-	if (!tank2Tex->loadFromFile("Textures/Blue tank.png"))
+	if (!tank2Tex->loadFromFile("Textures/Blue tank -canon.png"))
 		printf("Tank2 Texture Error Load");
 	tank2Tex->setSmooth(true);
+	if (!CanonTank1Tex->loadFromFile("Textures/Canon Rouge.png"))
+		printf("Tank2 Texture Error Load");
+	CanonTank1Tex->setSmooth(true);
+	if (!CanonTank2Tex->loadFromFile("Textures/Canon Bleu.png"))
+		printf("Tank2 Texture Error Load");
+	CanonTank2Tex->setSmooth(true);
 }
 
 void initMap() {
@@ -125,8 +132,9 @@ void drawMap(sf::RenderWindow &win) {
 
 void drawCible(sf::RenderWindow &win, float X, float Y, int player)
 {
-	sf::Shape *Canon = initSquareRender(10, 5);
-	Canon->setOrigin(0, 2.5);
+	sf::Shape *Canon = initSquareRender(60, 40);
+	player == 0 ? Canon->setTexture(CanonTank1Tex) : Canon->setTexture(CanonTank2Tex);
+	Canon->setOrigin(27, 20);
 	Canon->setPosition(Objects[player]->sprite->getPosition());
 	if (X > 20 || X < -20 || Y < -20 || Y>20)
 	{

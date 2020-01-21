@@ -19,6 +19,9 @@
     <Filter Include="Fichiers sources\Textures">
       <UniqueIdentifier>{6bd46a73-f49c-4889-bdef-679d946cf335}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Fichiers sources\Animations SpriteSheet">
+      <UniqueIdentifier>{16bba656-0945-4246-a869-6935a124e034}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -172,6 +175,9 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Projectile.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Anims.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
@@ -329,18 +335,15 @@
     <ClCompile Include="Projectile.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="Anims.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\B_Button.png">
       <Filter>Fichiers sources\Textures</Filter>
     </Image>
     <Image Include="Textures\A_Button.png">
-      <Filter>Fichiers sources\Textures</Filter>
-    </Image>
-    <Image Include="Textures\Red tank.png">
-      <Filter>Fichiers sources\Textures</Filter>
-    </Image>
-    <Image Include="Textures\Blue tank.png">
       <Filter>Fichiers sources\Textures</Filter>
     </Image>
     <Image Include="Textures\wall.png">
@@ -353,6 +356,18 @@
       <Filter>Fichiers sources\Textures</Filter>
     </Image>
     <Image Include="Textures\bullet2.png">
+      <Filter>Fichiers sources\Textures</Filter>
+    </Image>
+    <Image Include="Textures\Blue tank -canon.png">
+      <Filter>Fichiers sources\Textures</Filter>
+    </Image>
+    <Image Include="Textures\Canon Bleu.png">
+      <Filter>Fichiers sources\Textures</Filter>
+    </Image>
+    <Image Include="Textures\Canon Rouge.png">
+      <Filter>Fichiers sources\Textures</Filter>
+    </Image>
+    <Image Include="Textures\Red tank -canon.png">
       <Filter>Fichiers sources\Textures</Filter>
     </Image>
   </ItemGroup>
