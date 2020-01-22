@@ -26,22 +26,23 @@ private:
 	bool completed = false;
 
 public:
-	Animation(animName index) {
+
+	Animation(animName index) : animThread(&Animation::Play, this){
 		this->Name = index;
 		switch (Name)
 		{
 
 		case Shot:
 		{
-			spriteTime = 0.3f;
+			spriteTime = 0.05f;
 			spritesheetSize = 384;
 			spriteSize = 64;
 			sf::IntRect newRect(0, 0, 64, 64);
 			spriteRect = newRect;
 			if (!spriteSheet->loadFromFile("Animations_SpriteSheet/Shot_Star.png"))
 				printf("Load Shot Anim: Failed\n");
-			sf::Sprite baseSprite(*spriteSheet, spriteRect);
-			sprite = &baseSprite;
+			sprite = new Sprite(*spriteSheet, spriteRect);
+			sprite->setScale(10,10);
 			break;
 		}
 
@@ -54,8 +55,7 @@ public:
 			spriteRect = newRect;
 			if (!spriteSheet->loadFromFile("Animations SpriteSheet/Explosion.png"))
 				printf("Load Shot Anim: Failed\n");
-			sf::Sprite baseSprite(*spriteSheet, spriteRect);
-			sprite = &baseSprite;
+			sprite = new Sprite(*spriteSheet, spriteRect);
 			break;
 		}
 
@@ -68,8 +68,7 @@ public:
 			spriteRect = newRect;
 			if (!spriteSheet->loadFromFile("Animations SpriteSheet/Big_Hit.png"))
 				printf("Load Shot Anim: Failed\n");
-			sf::Sprite baseSprite(*spriteSheet, spriteRect);
-			sprite = &baseSprite;
+			sprite = new Sprite(*spriteSheet, spriteRect);
 			break;
 		}
 
@@ -86,6 +85,7 @@ public:
 		spriteSheet = nullptr;
 	}
 
-	void Play(sf::RenderWindow &window);;
+	void Play(sf::RenderWindow &window);
 
+	sf::Thread animThread;
 };

@@ -382,12 +382,13 @@ int main()
 		if ((Trig1 > 80 || Trig1 < -80) && !Fire1) //Shoot J1
 		{
 			Fire1 = true;
-			auto shotAnim = new Animation(Shot);
-			shotAnim->Play(window);
+			auto shotAnim = new Animation(animName::Shot);
+			shotAnim->animThread.launch();
 			drawProjectile(window, 0);
 		}
 		else if ((-10 < Trig1 && Trig1 < 10) && Fire1 && !Objects[0]->destroyed)
 			Fire1 = false;
+		
 
 		if ((Trig2 > 80 || Trig2 < -80) && !Fire2) //Shoot J2
 		{
