@@ -305,12 +305,6 @@ int main()
 				if (event.key.code == sf::Keyboard::F)
 					printf("fps %f\n", 0.25*(fps[0] + fps[1] + fps[2] + fps[3]));
 
-				if (event.key.code == sf::Keyboard::D)
-				{
-					auto animtest = new Animation(Hit);
-					animtest->Play();
-				}
-
 				if (event.key.code == sf::Keyboard::R && EndGame) {
 					EndGame = false;
 					Objects.clear();

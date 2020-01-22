@@ -15,7 +15,7 @@ class Animation
 {
 private:
 	animName Name;
-	sf::Texture *SpriteSheet = nullptr;
+	sf::Texture *spriteSheet = nullptr;
 	sf::IntRect spriteRect;
 	sf::Sprite *sprite = nullptr;
 	sf::Clock clock;
@@ -23,53 +23,22 @@ private:
 	float spriteTime = 0.0f;
 	float spriteSize = 0.0f;
 	float spritesheetSize = 0.0f;
-
-public:
 	bool completed = false;
 
+public:
 	Animation(animName index) {
 		this->Name = index;
 	}
 
 	~Animation() {
-		if (SpriteSheet) delete SpriteSheet;
-		SpriteSheet = nullptr;
+		if (spriteSheet) delete spriteSheet;
+		spriteSheet = nullptr;
 		if (sprite) delete sprite;
 		sprite = nullptr;
-		printf("DELETED\n");
 	}
 
-	void initAnim() {
-		switch (Name)
-		{
+	void initAnim();
 
-		case Shot:
-			break;
-
-		case Explosion:
-			break;
-
-		case Hit:
-			break;
-
-		default:
-			break;
-		}
-	}
-
-	void Play() {
-		while (completed = false) {
-			if (clock.getElapsedTime().asSeconds() > 0.5f)
-			{
-				if (/*spriteRect.left == spritesheetSize*/true)
-					completed = true;
-				else spriteRect.left += spriteSize; /*SpriteSize*/
-
-				sprite->setTextureRect(spriteRect);
-				clock.restart();
-			}
-		}
-		delete this;
-	};
+	void Play();;
 
 };
