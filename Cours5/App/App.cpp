@@ -25,7 +25,7 @@ CircleShape a_Button, b_Button;
 Text Title, PlayText, QuitText;
 Texture *A_ButtonTex = new Texture(), *B_ButtonTex = new Texture(), *BG = new Texture(), *Wall = new Texture(), 
 		*Bullet1 = new Texture(), *Bullet2 = new Texture(), *tank1Tex = new Texture(), *tank2Tex = new Texture(),
-		*CanonTank1Tex = new Texture, *CanonTank2Tex = new Texture;
+		*CanonTank1Tex = new Texture(), *CanonTank2Tex = new Texture();
 Font font;
 
 
@@ -382,6 +382,8 @@ int main()
 		if ((Trig1 > 80 || Trig1 < -80) && !Fire1) //Shoot J1
 		{
 			Fire1 = true;
+			auto shotAnim = new Animation(Shot);
+			shotAnim->Play(window);
 			drawProjectile(window, 0);
 		}
 		else if ((-10 < Trig1 && Trig1 < 10) && Fire1 && !Objects[0]->destroyed)

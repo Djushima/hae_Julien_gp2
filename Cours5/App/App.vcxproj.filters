@@ -19,7 +19,7 @@
     <Filter Include="Fichiers sources\Textures">
       <UniqueIdentifier>{6bd46a73-f49c-4889-bdef-679d946cf335}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Fichiers sources\Animations SpriteSheet">
+    <Filter Include="Fichiers sources\Animations_SpriteSheet">
       <UniqueIdentifier>{16bba656-0945-4246-a869-6935a124e034}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -369,6 +369,24 @@
     </Image>
     <Image Include="Textures\Red tank -canon.png">
       <Filter>Fichiers sources\Textures</Filter>
+    </Image>
+    <Image Include="Animation SpriteSheet\Big_Hit.png">
+      <Filter>Fichiers sources\Animations_SpriteSheet</Filter>
+    </Image>
+    <Image Include="Animation SpriteSheet\Explosion.png">
+      <Filter>Fichiers sources\Animations_SpriteSheet</Filter>
+    </Image>
+    <Image Include="Animation SpriteSheet\Medium_Hit.png">
+      <Filter>Fichiers sources\Animations_SpriteSheet</Filter>
+    </Image>
+    <Image Include="Animation SpriteSheet\Shot_Star.png">
+      <Filter>Fichiers sources\Animations_SpriteSheet</Filter>
+    </Image>
+    <Image Include="Animation SpriteSheet\Shot_Thunder.png">
+      <Filter>Fichiers sources\Animations_SpriteSheet</Filter>
+    </Image>
+    <Image Include="Animation SpriteSheet\Small_Hit.png">
+      <Filter>Fichiers sources\Animations_SpriteSheet</Filter>
     </Image>
   </ItemGroup>
 </Project>

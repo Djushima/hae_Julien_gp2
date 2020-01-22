@@ -421,6 +421,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="Animation SpriteSheet\Big_Hit.png" />
+    <Image Include="Animation SpriteSheet\Explosion.png" />
+    <Image Include="Animation SpriteSheet\Medium_Hit.png" />
+    <Image Include="Animation SpriteSheet\Shot_Star.png" />
+    <Image Include="Animation SpriteSheet\Shot_Thunder.png" />
+    <Image Include="Animation SpriteSheet\Small_Hit.png" />
     <Image Include="Textures\A_Button.png" />
     <Image Include="Textures\Background.png" />
     <Image Include="Textures\Blue tank -canon.png" />
