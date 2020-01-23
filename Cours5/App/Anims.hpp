@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <thread>
 
 using namespace sf;
 
@@ -11,81 +12,30 @@ enum animName
 	Hit,
 };
 
+struct Frame {
+	sf::IntRect rect;
+	double duration; // in seconds
+};
+
 class Animation
 {
 private:
 	animName Name;
+	std::vector<Frame> frames;
+	double totalLength = 0.0;
+	double progress = 0.0;
 	sf::Texture *spriteSheet = new Texture();
-	sf::IntRect spriteRect;
-	sf::Sprite *sprite = nullptr;
-	sf::Clock clock;
-
-	float spriteTime = 0.0f;
-	float spriteSize = 0.0f;
-	float spritesheetSize = 0.0f;
-	bool completed = false;
+	
 
 public:
+	sf::Sprite *sprite = new Sprite();
+	bool completed = false;
 
-	Animation(animName index) : animThread(&Animation::Play, this){
-		this->Name = index;
-		switch (Name)
-		{
 
-		case Shot:
-		{
-			spriteTime = 0.05f;
-			spritesheetSize = 384;
-			spriteSize = 64;
-			sf::IntRect newRect(0, 0, 64, 64);
-			spriteRect = newRect;
-			if (!spriteSheet->loadFromFile("Animations_SpriteSheet/Shot_Star.png"))
-				printf("Load Shot Anim: Failed\n");
-			sprite = new Sprite(*spriteSheet, spriteRect);
-			sprite->setScale(10,10);
-			break;
-		}
+	Animation(animName index);
 
-		case Explosion:
-		{
-			spriteTime = 0.3f;
-			spritesheetSize = 1000;
-			spriteSize = 250;
-			sf::IntRect newRect(0, 0, 250, 300);
-			spriteRect = newRect;
-			if (!spriteSheet->loadFromFile("Animations SpriteSheet/Explosion.png"))
-				printf("Load Shot Anim: Failed\n");
-			sprite = new Sprite(*spriteSheet, spriteRect);
-			break;
-		}
+	~Animation();
 
-		case Hit:
-		{
-			spriteTime = 0.3f;
-			spritesheetSize = 1000;
-			spriteSize = 250;
-			sf::IntRect newRect(0, 0, 250, 300);
-			spriteRect = newRect;
-			if (!spriteSheet->loadFromFile("Animations SpriteSheet/Big_Hit.png"))
-				printf("Load Shot Anim: Failed\n");
-			sprite = new Sprite(*spriteSheet, spriteRect);
-			break;
-		}
+	void update(double elapsed);
 
-		default:
-			printf("No anim Error");
-			break;
-		}
-	}
-
-	~Animation() {
-		if (sprite) delete sprite;
-		sprite = nullptr;
-		if (spriteSheet) delete spriteSheet;
-		spriteSheet = nullptr;
-	}
-
-	void Play(sf::RenderWindow &window);
-
-	sf::Thread animThread;
 };

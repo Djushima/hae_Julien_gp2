@@ -5,6 +5,7 @@
 #include <SFML/Graphics.hpp>
 #include <direct.h>
 #include <iostream>
+#include <thread>
 #include "Lib.hpp"
 #include "Entity.hpp"
 #include "Projectile.hpp"
@@ -14,6 +15,7 @@ using namespace sf;
 
 static std::vector<Entity*> Objects;
 static std::vector<Projectile*> ProjectileTab;
+static std::vector<Animation*> AnimTab;
 static std::vector<float> LastCible{ 45, 45 };
 static std::vector<float> LastRot{ 45, 45 };
 static std::vector<Vector2f> LastPos{Vector2f(640,360) , Vector2f(0,0)};
@@ -382,9 +384,9 @@ int main()
 		if ((Trig1 > 80 || Trig1 < -80) && !Fire1) //Shoot J1
 		{
 			Fire1 = true;
-			auto shotAnim = new Animation(animName::Shot);
-			shotAnim->animThread.launch();
 			drawProjectile(window, 0);
+			Animation *shot = new Animation(animName::Shot);
+			AnimTab.push_back(shot);
 		}
 		else if ((-10 < Trig1 && Trig1 < 10) && Fire1 && !Objects[0]->destroyed)
 			Fire1 = false;
@@ -403,7 +405,6 @@ int main()
 		window.draw(fpsText);
 		window.draw(EndText);
 
-			
 		for (int i = 0; i < 2; i++)
 		{
 			switch (i)
@@ -497,6 +498,13 @@ int main()
 					}
 			}
 			
+		}
+
+		for (int i = 0; i < AnimTab.size(); i++)
+		{
+			window.draw(*AnimTab[i]->sprite);
+			AnimTab[i]->update((frameStart - prevFrameStart).asSeconds());
+			if (AnimTab[i]->completed) AnimTab.erase(AnimTab.begin() + i);
 		}
 
 		window.display();																			//Ca dessine et attends la vsync.
