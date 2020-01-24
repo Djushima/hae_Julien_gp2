@@ -1,7 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include <thread>
+#include "Entity.hpp"
 
 using namespace sf;
 
@@ -25,14 +25,15 @@ private:
 	double totalLength = 0.0;
 	double progress = 0.0;
 	sf::Texture *spriteSheet = new Texture();
-	
+	Entity *Parent = nullptr;
+	float angle;
 
 public:
 	sf::Sprite *sprite = new Sprite();
 	bool completed = false;
 
 
-	Animation(animName index);
+	Animation(animName index, Entity *obj, float angle);
 
 	~Animation();
 

@@ -20,7 +20,7 @@ static std::vector<float> LastCible{ 45, 45 };
 static std::vector<float> LastRot{ 45, 45 };
 static std::vector<Vector2f> LastPos{Vector2f(640,360) , Vector2f(0,0)};
 static Vector2f SquarePos1, SquarePos2;
-const double PI = 3.141592653589793238463;
+static const double PI = 3.141592653589793238463;
 
 RectangleShape PlayButton, QuitButton;
 CircleShape a_Button, b_Button;
@@ -154,7 +154,7 @@ void drawProjectile(sf::RenderWindow &win, int player) {
 	auto Proj = new Projectile(
 		angle,
 		initSquareRender(10, 16),
-		Vector2f(Objects[player]->sprite->getPosition().x + cos(angle) * 50, Objects[player]->sprite->getPosition().y + sin(angle) * 50));
+		Vector2f(Objects[player]->sprite->getPosition().x + cos(angle) * 45, Objects[player]->sprite->getPosition().y + sin(angle) * 45));
 	player == 0 ? Proj->sprite->setTexture(Bullet1) : Proj->sprite->setTexture(Bullet2);
 	Proj->sprite->setOrigin(Vector2f(5, 0));
 	Objects.push_back(Proj);
@@ -385,7 +385,7 @@ int main()
 		{
 			Fire1 = true;
 			drawProjectile(window, 0);
-			Animation *shot = new Animation(animName::Shot);
+			Animation *shot = new Animation(animName::Shot, Objects[0], LastCible[0]);
 			AnimTab.push_back(shot);
 		}
 		else if ((-10 < Trig1 && Trig1 < 10) && Fire1 && !Objects[0]->destroyed)
@@ -463,7 +463,7 @@ int main()
 
 			if (i != 1 && Objects[1]->box.intersects(Objects[i]->box) && i != 1 && Objects[1]->playable)
 			{
-				if (!Objects[i]->movable || Objects[i]->playable)	//Cas: Tank1 vs Wall
+				if (!Objects[i]->movable || Objects[i]->playable)	//Cas: Tank2 vs Wall
 				{
 					SquarePos2 = LastPos[1];
 					Objects[1]->sprite->setPosition(LastPos[1]);

@@ -1,7 +1,9 @@
 #include "Anims.hpp"
 
-Animation::Animation(animName index) {
+Animation::Animation(animName index, Entity *obj, float angle) {
 	this->Name = index;
+	this->Parent = obj;
+	this->angle = angle;
 	switch (Name)
 	{
 
@@ -9,6 +11,9 @@ Animation::Animation(animName index) {
 	{
 		if (!spriteSheet->loadFromFile("Animations_SpriteSheet/Shot_Star.png"))
 			printf("Error load Shot anim");
+		sprite->setOrigin(Vector2f(32, 32));
+		sprite->setPosition(Vector2f(Parent->sprite->getPosition().x + cos(angle) * 32, Parent->sprite->getPosition().y + sin(angle) * 32));
+		sprite->setRotation(angle * (180 / 3.14) + 90);
 		sprite->setTexture(*spriteSheet);
 		sprite->setTextureRect(sf::IntRect(0, 0, 64, 64));
 		frames.push_back({ sf::IntRect(0,0,64,64), 0.1 });
@@ -62,6 +67,8 @@ Animation::~Animation() {
 	spriteSheet = nullptr;
 	if (sprite) delete sprite;
 	sprite = nullptr;
+	if (Parent) delete Parent;
+	Parent = nullptr;
 }
 
 void Animation::update(double elapsed) {
