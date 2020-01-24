@@ -10,24 +10,27 @@
 #include "Entity.hpp"
 #include "Projectile.hpp"
 #include "Anims.hpp"
+#include "Particle.hpp"
 
 using namespace sf;
 
 static std::vector<Entity*> Objects;
 static std::vector<Projectile*> ProjectileTab;
 static std::vector<Animation*> AnimTab;
+static std::vector<Particle*> ParticleTab;
 static std::vector<float> LastCible{ 45, 45 };
 static std::vector<float> LastRot{ 45, 45 };
 static std::vector<Vector2f> LastPos{Vector2f(640,360) , Vector2f(0,0)};
 static Vector2f SquarePos1, SquarePos2;
 static const double PI = 3.141592653589793238463;
 
+
 RectangleShape PlayButton, QuitButton;
 CircleShape a_Button, b_Button;
 Text Title, PlayText, QuitText;
 Texture *A_ButtonTex = new Texture(), *B_ButtonTex = new Texture(), *BG = new Texture(), *Wall = new Texture(), 
 		*Bullet1 = new Texture(), *Bullet2 = new Texture(), *tank1Tex = new Texture(), *tank2Tex = new Texture(),
-		*CanonTank1Tex = new Texture(), *CanonTank2Tex = new Texture();
+		*CanonTank1Tex = new Texture(), *CanonTank2Tex = new Texture(), *Smoke = new Texture();
 Font font;
 
 
@@ -63,6 +66,9 @@ void initTextures() {
 	if (!CanonTank2Tex->loadFromFile("Textures/Canon Bleu.png"))
 		printf("Tank2 Texture Error Load");
 	CanonTank2Tex->setSmooth(true);
+	if (!Smoke->loadFromFile("Textures/Smoke.png"))
+		printf("Smoke Texture Error Load");
+	Smoke->setSmooth(true);
 }
 
 void initMap() {
@@ -154,7 +160,8 @@ void drawProjectile(sf::RenderWindow &win, int player) {
 	auto Proj = new Projectile(
 		angle,
 		initSquareRender(10, 16),
-		Vector2f(Objects[player]->sprite->getPosition().x + cos(angle) * 45, Objects[player]->sprite->getPosition().y + sin(angle) * 45));
+		Vector2f(Objects[player]->sprite->getPosition().x + cos(angle) * 48, Objects[player]->sprite->getPosition().y + sin(angle) * 48),
+		player);
 	player == 0 ? Proj->sprite->setTexture(Bullet1) : Proj->sprite->setTexture(Bullet2);
 	Proj->sprite->setOrigin(Vector2f(5, 0));
 	Objects.push_back(Proj);
@@ -205,6 +212,35 @@ void DrawMainMenu(sf::RenderWindow &win, Text fps) {
 	win.draw(b_Button);
 	win.draw(fps);
 	win.display();
+}
+
+void InitParticles(Entity *parent, prtType type)
+{
+	srand(time(NULL));
+	int maxPrt = rand() %15 + 20;
+	int i = 0;
+	while (i != maxPrt)
+	{
+		i++;
+		sf::Shape *shp = new CircleShape(8, 64);
+		Vector2f spd((rand() %10 -5)/1.33 , (rand() %10 -5)/1.33);
+		float life = rand() %90 +30;
+		sf::Color clr;
+		switch (type)
+		{
+		case Eplode:
+			shp->setPosition(parent->sprite->getPosition());
+			clr = sf::Color::Red;
+			break;
+
+		case Trail:
+			shp->setPosition(parent->sprite->getPosition());
+			clr = sf::Color(200,200,200,255);
+			break;
+		}
+		Particle *prt = new Particle(shp, spd, life, clr, Smoke, type);
+		ParticleTab.push_back(prt);
+	}
 }
 
 int main()
@@ -385,8 +421,8 @@ int main()
 		{
 			Fire1 = true;
 			drawProjectile(window, 0);
-			Animation *shot = new Animation(animName::Shot, Objects[0], LastCible[0]);
-			AnimTab.push_back(shot);
+			Animation *shot1 = new Animation(animName::Shot, Objects[0], LastCible[0]);
+			AnimTab.push_back(shot1);
 		}
 		else if ((-10 < Trig1 && Trig1 < 10) && Fire1 && !Objects[0]->destroyed)
 			Fire1 = false;
@@ -396,6 +432,8 @@ int main()
 		{
 			Fire2 = true;
 			drawProjectile(window, 1);
+			Animation *shot2 = new Animation(animName::Shot, Objects[1], LastCible[1]);
+			AnimTab.push_back(shot2);
 		}
 		else if ((-80 < Trig2 < 80) && Fire2 && !Objects[1]->destroyed)
 			Fire2 = false;
@@ -454,6 +492,10 @@ int main()
 				}
 				else						//Cas: Tank vs Proj
 				{
+					Animation *hit = new Animation(animName::Hit, Objects[i], LastCible[0]);
+					AnimTab.push_back(hit);
+					Animation *boom = new Animation(animName::Explosion, Objects[0], LastCible[0]);
+					AnimTab.push_back(boom);
 					Objects.erase(Objects.begin()+i);
 					Objects[0]->Destroyed(Objects, 0);
 					Fire1 = true;
@@ -470,6 +512,11 @@ int main()
 				}
 				else						//Cas: Tank vs Proj
 				{
+					InitParticles(Objects[1], prtType::Eplode);
+					Animation *hit = new Animation(animName::Hit, Objects[i], LastCible[0]);
+					AnimTab.push_back(hit);
+					Animation *boom = new Animation(animName::Explosion, Objects[1], LastCible[0]);
+					AnimTab.push_back(boom);
 					Objects.erase(Objects.begin() + i);
 					Objects[1]->Destroyed(Objects, 1);
 					Fire2 = true;
@@ -485,13 +532,19 @@ int main()
 					{
 						Projectile * proj = dynamic_cast<Projectile*>(Objects[i]);
 						if (proj->Bounced)
+						{
+							Animation *hit = new Animation(animName::Hit, Objects[i], LastCible[0]);
+							AnimTab.push_back(hit);
 							Objects.erase(Objects.begin() + i);
+						}
 						else
 							proj->Rebond(Objects[j]);
 						break;
 					}
 					else if (Objects[i]->movable && Objects[j]->movable) //Cas: Proj vs Proj = Destroy
 					{
+						Animation *hit = new Animation(animName::Hit, Objects[i], LastCible[0]);
+						AnimTab.push_back(hit);
 						Objects.erase(Objects.begin() + i);
 						Objects.erase(Objects.begin() + j-1);
 						break;
@@ -505,6 +558,14 @@ int main()
 			window.draw(*AnimTab[i]->sprite);
 			AnimTab[i]->update((frameStart - prevFrameStart).asSeconds());
 			if (AnimTab[i]->completed) AnimTab.erase(AnimTab.begin() + i);
+		}
+		for (int i = 0; i < ParticleTab.size(); i++)
+		{
+			ParticleTab[i]->Update();
+			if (ParticleTab[i]->Killed)
+				ParticleTab.erase(ParticleTab.begin() + i);
+			else
+				ParticleTab[i]->draw(window);
 		}
 
 		window.display();																			//Ca dessine et attends la vsync.

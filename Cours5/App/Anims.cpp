@@ -1,4 +1,5 @@
 #include "Anims.hpp"
+#include "Projectile.hpp"
 
 Animation::Animation(animName index, Entity *obj, float angle) {
 	this->Name = index;
@@ -28,30 +29,38 @@ Animation::Animation(animName index, Entity *obj, float angle) {
 
 	case Explosion:
 	{
-		if (!spriteSheet->loadFromFile("Animations_SpriteSheet/Shot_Star.png"))
+		if (!spriteSheet->loadFromFile("Animations_SpriteSheet/Explosion.png"))
 			printf("Error load Shot anim");
+		sprite->setOrigin(Vector2f(64, 64));
+		sprite->setPosition(obj->sprite->getPosition());
 		sprite->setTexture(*spriteSheet);
-		frames.push_back({ sf::IntRect(0,0,0,0), 0.05 });
-		frames.push_back({ sf::IntRect(0,0,0,0), 0.05 });
-		frames.push_back({ sf::IntRect(0,0,0,0), 0.05 });
-		frames.push_back({ sf::IntRect(0,0,0,0), 0.05 });
-		frames.push_back({ sf::IntRect(0,0,0,0), 0.05 });
-		frames.push_back({ sf::IntRect(0,0,0,0), 0.05 });
+		sprite->setTextureRect(sf::IntRect(0, 0, 128, 128));
+		frames.push_back({ sf::IntRect(0,128,128,128), 0.05 });
+		frames.push_back({ sf::IntRect(0,256,128,128), 0.05 });
+		frames.push_back({ sf::IntRect(0,384,128,128), 0.05 });
+		frames.push_back({ sf::IntRect(0,512,128,128), 0.05 });
+		frames.push_back({ sf::IntRect(0,640,128,128), 0.05 });
+		frames.push_back({ sf::IntRect(0,768,128,128), 0.05 });
 		totalLength = 0.3;
 		break;
 	}
 
 	case Hit:
 	{
-		if (!spriteSheet->loadFromFile("Animations_SpriteSheet/Shot_Star.png"))
+		if (!spriteSheet->loadFromFile("Animations_SpriteSheet/Big_Hit.png"))
 			printf("Error load Shot anim");
+		sprite->setOrigin(Vector2f(64, 64));
+		sprite->setPosition(obj->sprite->getPosition());
 		sprite->setTexture(*spriteSheet);
-		frames.push_back({ sf::IntRect(0,0,0,0), 0.05 });
-		frames.push_back({ sf::IntRect(0,0,0,0), 0.05 });
-		frames.push_back({ sf::IntRect(0,0,0,0), 0.05 });
-		frames.push_back({ sf::IntRect(0,0,0,0), 0.05 });
-		frames.push_back({ sf::IntRect(0,0,0,0), 0.05 });
-		frames.push_back({ sf::IntRect(0,0,0,0), 0.05 });
+		sprite->setTextureRect(sf::IntRect(0, 0, 128, 128));
+		Projectile * proj = dynamic_cast<Projectile*>(obj);
+		proj->Shooter == 0 ? sprite->setColor(sf::Color::Red) : sprite->setColor(sf::Color::White);
+		frames.push_back({ sf::IntRect(0,0,128,128), 0.05 });
+		frames.push_back({ sf::IntRect(0,128,128,128), 0.05 });
+		frames.push_back({ sf::IntRect(0,256,128,128), 0.05 });
+		frames.push_back({ sf::IntRect(0,384,128,128), 0.05 });
+		frames.push_back({ sf::IntRect(0,512,128,128), 0.05 });
+		frames.push_back({ sf::IntRect(0,640,128,128), 0.05 });
 		totalLength = 0.3;
 		break;
 	}

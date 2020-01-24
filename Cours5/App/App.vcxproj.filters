@@ -180,6 +180,9 @@
     <ClInclude Include="Anims.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="Particle.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -387,6 +390,9 @@
     </Image>
     <Image Include="Animation SpriteSheet\Small_Hit.png">
       <Filter>Fichiers sources\Animations_SpriteSheet</Filter>
+    </Image>
+    <Image Include="Textures\Smoke.png">
+      <Filter>Fichiers sources\Textures</Filter>
     </Image>
   </ItemGroup>
 </Project>

@@ -211,6 +211,7 @@
     <ClInclude Include="Anims.hpp" />
     <ClInclude Include="Entity.hpp" />
     <ClInclude Include="Lib.hpp" />
+    <ClInclude Include="Particle.hpp" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Projectile.hpp" />
   </ItemGroup>
@@ -436,6 +437,7 @@
     <Image Include="Textures\Canon Bleu.png" />
     <Image Include="Textures\Canon Rouge.png" />
     <Image Include="Textures\Red tank -canon.png" />
+    <Image Include="Textures\Smoke.png" />
     <Image Include="Textures\wall.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
