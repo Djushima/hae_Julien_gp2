@@ -214,10 +214,10 @@ void DrawMainMenu(sf::RenderWindow &win, Text fps) {
 	win.display();
 }
 
-void InitParticles(Entity *parent, prtType type)
+void InitParticles(Entity *parent, prtType type, int quantity)
 {
 	srand(time(NULL));
-	int maxPrt = rand() %15 + 20;
+	int maxPrt = rand() % quantity + 20;
 	int i = 0;
 	while (i != maxPrt)
 	{
@@ -273,10 +273,14 @@ int main()
 	initTextures();
 	initMap();
 
+	int frame = 0, shakeRate = 2, shakeDur = 30;
 	float squareSpeed1 = 1, squareSpeed2 = 1;
 	float xR1 = 0, yR1 = 0, xL1 = 0, yL1 = 0, xR2 = 0, yR2 = 0, xL2 = 0, yL2 = 0, Trig1 = 0, Trig2 = 0; //Inputs J1 J2
-	bool Fire1 = false, Fire2 = false, EndGame = false, MainMenu = true;
+	bool Fire1 = false, Fire2 = false, EndGame = false, MainMenu = true, shake = false;
 	Vector2f tank1Dir, tank2Dir;
+	Vector2i baseScreenPos;
+
+	baseScreenPos = window.getPosition();
 
 
 	while (window.isOpen())																			//tout le temps.
@@ -479,6 +483,7 @@ int main()
 
 		for (int i = 0; i < Objects.size(); i++) {
 			Objects[i]->Move();
+			Objects[i]->HittingUpdate();
 		}
 
 		for (int i = 0; i < Objects.size(); i++)
@@ -490,15 +495,29 @@ int main()
 					SquarePos1 = LastPos[0];
 					Objects[0]->sprite->setPosition(LastPos[0]);
 				}
-				else						//Cas: Tank vs Proj
+				else 						//Cas: Tank vs Proj
 				{
 					Animation *hit = new Animation(animName::Hit, Objects[i], LastCible[0]);
 					AnimTab.push_back(hit);
-					Animation *boom = new Animation(animName::Explosion, Objects[0], LastCible[0]);
-					AnimTab.push_back(boom);
-					Objects.erase(Objects.begin()+i);
-					Objects[0]->Destroyed(Objects, 0);
-					Fire1 = true;
+					if (!Objects[0]->hitted)
+					{
+						shake = true;
+						shakeRate = 3;
+						shakeDur = 30;
+						Objects[0]->hitted = true;
+						Objects[0]->Life -= 1;
+						if (Objects[0]->Life <= 0)
+						{
+							shakeRate = 2;
+							shakeDur = 60;
+							InitParticles(Objects[0], prtType::Eplode, 30);
+							Animation *boom = new Animation(animName::Explosion, Objects[0], LastCible[0]);
+							AnimTab.push_back(boom);
+							Objects[0]->Destroyed(Objects, 0);
+							Fire1 = true;
+						}
+					}
+					Objects.erase(Objects.begin() + i);
 					break;
 				}
 			}
@@ -512,14 +531,27 @@ int main()
 				}
 				else						//Cas: Tank vs Proj
 				{
-					InitParticles(Objects[1], prtType::Eplode);
 					Animation *hit = new Animation(animName::Hit, Objects[i], LastCible[0]);
 					AnimTab.push_back(hit);
-					Animation *boom = new Animation(animName::Explosion, Objects[1], LastCible[0]);
-					AnimTab.push_back(boom);
+					if (!Objects[1]->hitted)
+					{
+						shake = true;
+						shakeRate = 3;
+						shakeDur = 30;
+						Objects[1]->hitted = true;
+						Objects[1]->Life -= 1;
+						if (Objects[1]->Life <= 0)
+						{
+							shakeRate = 2;
+							shakeDur = 60;
+							InitParticles(Objects[1], prtType::Eplode, 30);
+							Animation *boom = new Animation(animName::Explosion, Objects[1], LastCible[0]);
+							AnimTab.push_back(boom);
+							Objects[1]->Destroyed(Objects, 1);
+							Fire2 = true;
+						}
+					}
 					Objects.erase(Objects.begin() + i);
-					Objects[1]->Destroyed(Objects, 1);
-					Fire2 = true;
 					break;
 				}
 			}
@@ -566,6 +598,22 @@ int main()
 				ParticleTab.erase(ParticleTab.begin() + i);
 			else
 				ParticleTab[i]->draw(window);
+		}
+
+		if (shake)
+		{
+			frame++;
+			if (frame % shakeRate == 0)
+				if (shakeRate == 2)
+					window.setPosition(Vector2i(baseScreenPos.x + rand() % 15 -10, baseScreenPos.y + rand() % 15 -10));
+				else
+					window.setPosition(Vector2i(baseScreenPos.x + rand() % 10 - 5, baseScreenPos.y + rand() % 10 - 5));
+			if (frame > shakeDur)
+			{
+				frame = 0;
+				shake = false;
+				window.setPosition(baseScreenPos);
+			}
 		}
 
 		window.display();																			//Ca dessine et attends la vsync.

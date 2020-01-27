@@ -11,3 +11,22 @@ void Entity::Destroyed(std::vector<Entity*> Objects, int player) {
 	Objects[player]->sprite = nullptr;
 	destroyed = true;
 }
+
+void Entity::HittingUpdate() {
+	if (hitted && !destroyed)
+	{
+		frame++;
+		if (frame % 15 == 0)
+		{
+			sprite->getFillColor().a == 255 ? sprite->setFillColor(sf::Color(255, 255, 255, 120)) : sprite->setFillColor(sf::Color(255, 255, 255, 255));
+
+		}
+		if (frame == 180)
+		{
+			sprite->setFillColor(sf::Color(255, 255, 255, 255));
+			frame = 0;
+			hitted = false;
+		}
+
+	}
+}

@@ -394,5 +394,17 @@
     <Image Include="Textures\Smoke.png">
       <Filter>Fichiers sources\Textures</Filter>
     </Image>
+    <Image Include="Textures\Wall_Cube.jpg">
+      <Filter>Fichiers sources\Textures</Filter>
+    </Image>
+    <Image Include="Textures\wood_Crate.jpg">
+      <Filter>Fichiers sources\Textures</Filter>
+    </Image>
+    <Image Include="Textures\Fissure.png">
+      <Filter>Fichiers sources\Textures</Filter>
+    </Image>
+    <Image Include="Textures\Shield.png">
+      <Filter>Fichiers sources\Textures</Filter>
+    </Image>
   </ItemGroup>
 </Project>
