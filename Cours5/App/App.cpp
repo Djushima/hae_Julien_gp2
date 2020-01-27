@@ -28,9 +28,9 @@ static const double PI = 3.141592653589793238463;
 RectangleShape PlayButton, QuitButton;
 CircleShape a_Button, b_Button;
 Text Title, PlayText, QuitText;
-Texture *A_ButtonTex = new Texture(), *B_ButtonTex = new Texture(), *BG = new Texture(), *Wall = new Texture(), 
+Texture *A_ButtonTex = new Texture(), *B_ButtonTex = new Texture(), *BG = new Texture(), *Border = new Texture(), 
 		*Bullet1 = new Texture(), *Bullet2 = new Texture(), *tank1Tex = new Texture(), *tank2Tex = new Texture(),
-		*CanonTank1Tex = new Texture(), *CanonTank2Tex = new Texture(), *Smoke = new Texture();
+		*CanonTank1Tex = new Texture(), *CanonTank2Tex = new Texture(), *Smoke = new Texture(), *WallTex = new Texture();
 Font font;
 
 
@@ -40,10 +40,10 @@ RectangleShape* initSquareRender(int x, int y) {
 }
 
 void initTextures() {
-	if (!Wall->loadFromFile("Textures/Wall.png"))
+	if (!Border->loadFromFile("Textures/Wall.png"))
 		printf("Wall Texture Error Load");
-	Wall->setSmooth(true);
-	Wall->setRepeated(true);
+	Border->setSmooth(true);
+	Border->setRepeated(true);
 	if (!BG->loadFromFile("Textures/Background.png"))
 		printf("Wall Texture Error Load");
 	BG->setSmooth(true);
@@ -69,6 +69,9 @@ void initTextures() {
 	if (!Smoke->loadFromFile("Textures/Smoke.png"))
 		printf("Smoke Texture Error Load");
 	Smoke->setSmooth(true);
+	if (!WallTex->loadFromFile("Textures/Wall_Cube.jpg"))
+		printf("WallCube Texture Error Load");
+	WallTex->setSmooth(true);
 }
 
 void initMap() {
@@ -93,7 +96,7 @@ void initMap() {
 	auto NBorder = new Entity(
 		initSquareRender(1280, 50),
 		Vector2f(0, 0));
-	NBorder->sprite->setTexture(Wall);
+	NBorder->sprite->setTexture(Border);
 	NBorder->sprite->setTextureRect(IntRect(0, 0, 1280, 128));
 	NBorder->box = NBorder->sprite->getGlobalBounds();
 	Objects.push_back(NBorder);
@@ -101,7 +104,7 @@ void initMap() {
 	auto SBorder = new Entity(
 		initSquareRender(1280, 50),
 		Vector2f(0, 670));
-	SBorder->sprite->setTexture(Wall);
+	SBorder->sprite->setTexture(Border);
 	SBorder->sprite->setTextureRect(IntRect(0, 0, 1280, 128));
 	SBorder->box = SBorder->sprite->getGlobalBounds();
 	Objects.push_back(SBorder);
@@ -109,7 +112,7 @@ void initMap() {
 	auto EBorder = new Entity(
 		initSquareRender(620, 50),
 		Vector2f(1280, 50));
-	EBorder->sprite->setTexture(Wall);
+	EBorder->sprite->setTexture(Border);
 	EBorder->sprite->setTextureRect(IntRect(0, 0, 1280, 128));
 	EBorder->sprite->setRotation(90);
 	EBorder->box = EBorder->sprite->getGlobalBounds();
@@ -118,12 +121,89 @@ void initMap() {
 	auto WBorder = new Entity(
 		initSquareRender(620, 50),
 		Vector2f(0, 50));
-	WBorder->sprite->setTexture(Wall);
+	WBorder->sprite->setTexture(Border);
 	WBorder->sprite->setTextureRect(IntRect(0, 0, 1280, 128));
 	WBorder->sprite->setRotation(90);
 	WBorder->sprite->setOrigin(0, 50);
 	WBorder->box = WBorder->sprite->getGlobalBounds();
 	Objects.push_back(WBorder);
+
+	srand(time(NULL));
+	int seed = rand() % 3;
+	switch (seed){
+	case 0:
+	{
+		auto Wall = new Entity(initSquareRender(150, 150), Vector2f(640, 360));
+		Wall->sprite->setRotation(45);
+		Wall->sprite->setOrigin(75, 75);
+		Wall->sprite->setTexture(WallTex);
+		Wall->sprite->setOutlineThickness(1);
+		Wall->sprite->setOutlineColor(sf::Color::Black);
+		Wall->box = Wall->sprite->getGlobalBounds();
+		Objects.push_back(Wall);
+		break;
+	}
+	case 1:
+	{
+		for (int i = 0; i < 7; i++)
+		{
+			auto Wall = new Entity(initSquareRender(100, 100), Vector2f(640, 360));
+			Wall->sprite->setOrigin(50, 50);
+			Wall->sprite->setTexture(WallTex);
+			Wall->sprite->setOutlineThickness(1);
+			Wall->sprite->setOutlineColor(sf::Color::Black);
+			switch (i)
+			{
+			case 1:
+				Wall->sprite->setPosition(320, 360);
+				break;
+
+			case 2:
+				Wall->sprite->setPosition(960, 360);
+				break;
+
+			case 3:
+				Wall->sprite->setPosition(480, 200);
+				break;
+
+			case 4:
+				Wall->sprite->setPosition(800, 200);
+				break;
+
+			case 5:
+				Wall->sprite->setPosition(800, 520);
+				break;
+
+			case 6:
+				Wall->sprite->setPosition(480, 520);
+				break;
+
+			default:
+				break;
+			}
+			Wall->box = Wall->sprite->getGlobalBounds();
+			Objects.push_back(Wall);
+		}
+		break;
+	}
+	default:
+	{
+		for (int i = 0; i < 5; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				auto Wall = new Entity(initSquareRender(50, 50), Vector2f(640, 360));
+				Wall->sprite->setOrigin(25, 25);
+				Wall->sprite->setPosition(i * 236 +168, j * 155+127);
+				Wall->sprite->setTexture(WallTex);
+				Wall->sprite->setOutlineThickness(1);
+				Wall->sprite->setOutlineColor(sf::Color::Black);
+				Wall->box = Wall->sprite->getGlobalBounds();
+				Objects.push_back(Wall);
+			}
+		}
+		break;
+	}}
 }
 
 void drawMap(sf::RenderWindow &win) {
@@ -248,7 +328,7 @@ int main()
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 8;
 
-	sf::RenderWindow window(sf::VideoMode(1280,720), "I LOVE TANKS!", sf::Style::Default, settings);	//Creer une fenetre appelé "SFML Works" de taille 200x200)
+	sf::RenderWindow window(sf::VideoMode(1280,720), "I LOVE TANKS!", sf::Style::Default, settings);	
 	window.setVerticalSyncEnabled(true);
 
 	sf::Clock Clock;
