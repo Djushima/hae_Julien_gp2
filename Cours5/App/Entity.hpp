@@ -8,7 +8,7 @@ class Entity {
 public:
 	sf::Shape *sprite = nullptr;			//Rendu
 	sf::FloatRect box;						//Collision
-	bool movable = false, playable = false, destroyed = false, hitted = false;
+	bool movable = false, playable = false, destroyed = false, hitted = false, destroyable = false;
 	int Life = 3, frame = 0;
 
 	Entity(sf::Shape *forme, Vector2f Pos) {

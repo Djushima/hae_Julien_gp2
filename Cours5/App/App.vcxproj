@@ -433,12 +433,12 @@
     <Image Include="Textures\Blue tank -canon.png" />
     <Image Include="Textures\bullet1.png" />
     <Image Include="Textures\bullet2.png" />
+    <Image Include="Textures\Burned.png" />
     <Image Include="Textures\B_Button.png" />
     <Image Include="Textures\Canon Bleu.png" />
     <Image Include="Textures\Canon Rouge.png" />
     <Image Include="Textures\Fissure.png" />
     <Image Include="Textures\Red tank -canon.png" />
-    <Image Include="Textures\Shield.png" />
     <Image Include="Textures\Smoke.png" />
     <Image Include="Textures\wall.png" />
     <Image Include="Textures\Wall_Cube.jpg" />

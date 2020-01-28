@@ -6,7 +6,6 @@ using namespace sf;
 
 enum prtType {
 	Eplode,
-	Trail,
 };
 
 class Particle
@@ -57,9 +56,6 @@ public:
 				Life--;
 			}
 			else Killed = true;
-			break;
-
-		case Trail:
 			break;
 		}
 		

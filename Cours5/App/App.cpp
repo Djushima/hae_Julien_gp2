@@ -18,6 +18,8 @@ static std::vector<Entity*> Objects;
 static std::vector<Projectile*> ProjectileTab;
 static std::vector<Animation*> AnimTab;
 static std::vector<Particle*> ParticleTab;
+static std::vector<Sprite> ImpactTab;
+static std::vector<Entity*> LifeTab;
 static std::vector<float> LastCible{ 45, 45 };
 static std::vector<float> LastRot{ 45, 45 };
 static std::vector<Vector2f> LastPos{Vector2f(640,360) , Vector2f(0,0)};
@@ -28,10 +30,18 @@ static const double PI = 3.141592653589793238463;
 RectangleShape PlayButton, QuitButton;
 CircleShape a_Button, b_Button;
 Text Title, PlayText, QuitText;
-Texture *A_ButtonTex = new Texture(), *B_ButtonTex = new Texture(), *BG = new Texture(), *Border = new Texture(), 
+Texture *A_ButtonTex = new Texture(), *B_ButtonTex = new Texture(), *BG = new Texture(), *Border = new Texture(),
 		*Bullet1 = new Texture(), *Bullet2 = new Texture(), *tank1Tex = new Texture(), *tank2Tex = new Texture(),
-		*CanonTank1Tex = new Texture(), *CanonTank2Tex = new Texture(), *Smoke = new Texture(), *WallTex = new Texture();
-Font font;
+		*CanonTank1Tex = new Texture(), *CanonTank2Tex = new Texture(), *Tank1UI = new Texture(), *Tank2UI = new Texture(),
+		*WallTex = new Texture(), *WoodTex = new Texture(), *Burn = new Texture(), *Smoke = new Texture();
+Font fontTitre, font;
+
+enum GameState {
+	MainMenu,
+	Playing,
+	Quit,
+};
+static GameState State = MainMenu;
 
 
 RectangleShape* initSquareRender(int x, int y) {
@@ -72,6 +82,18 @@ void initTextures() {
 	if (!WallTex->loadFromFile("Textures/Wall_Cube.jpg"))
 		printf("WallCube Texture Error Load");
 	WallTex->setSmooth(true);
+	if (!WoodTex->loadFromFile("Textures/wood_Crate.jpg"))
+		printf("WoodCube Texture Error Load");
+	WoodTex->setSmooth(true);
+	if (!Burn->loadFromFile("Textures/Burned.png"))
+		printf("Burn Texture Error Load");
+	Burn->setSmooth(true);
+	if (!Tank1UI->loadFromFile("Textures/Red tank.png"))
+		printf("Tank1UI Texture Error Load");
+	Tank1UI->setSmooth(true);
+	if (!Tank2UI->loadFromFile("Textures/Blue tank.png"))
+		printf("Tank2UI Texture Error Load");
+	Tank2UI->setSmooth(true);
 }
 
 void initMap() {
@@ -204,6 +226,104 @@ void initMap() {
 		}
 		break;
 	}}
+
+	seed = rand() % 30 + 20;
+	for (int i = 0; i < seed; i++)
+	{
+		auto DestructWall = new Entity(initSquareRender(25, 25), Vector2f(640, 360));
+		DestructWall->destroyable = true;
+		DestructWall->sprite->setOrigin(12.5, 12.5);
+		DestructWall->sprite->setTexture(WoodTex);
+		DestructWall->sprite->setOutlineThickness(1);
+		DestructWall->sprite->setOutlineColor(sf::Color::Black);
+	restart:
+		DestructWall->sprite->setPosition(rand() % 1180 + 50, rand() % 620 + 50);
+		DestructWall->box = DestructWall->sprite->getGlobalBounds();
+		for (int j = 0; j < Objects.size(); j++)
+		{
+			if (DestructWall->box.intersects(Objects[j]->box))
+				goto restart;
+		}
+		Objects.push_back(DestructWall);
+	}
+}
+
+void initMenu() {
+	fontTitre.loadFromFile("Tr2n.ttf");
+	font.loadFromFile("earthorbiter.ttf");
+	Title.setString("TRANKS");
+	Title.setStyle(sf::Text::Underlined);
+	Title.setFont(fontTitre);
+	Title.setFillColor(sf::Color::Red);
+	Title.setPosition(1280 / 2.2, 720 / 7);
+
+	PlayButton.setSize(Vector2f(1280 / 3, 720 / 6));
+	PlayButton.setPosition(Vector2f(1280 / 3, 720 / 4));
+	PlayText.setString("Jouer");
+	PlayText.setFont(font);
+	PlayText.setFillColor(sf::Color::Black);
+	PlayText.setPosition(Vector2f(PlayButton.getGlobalBounds().left + PlayButton.getGlobalBounds().width / 2.2, PlayButton.getGlobalBounds().top + PlayButton.getGlobalBounds().height / 3));
+
+	QuitButton.setSize(Vector2f(1280 / 3, 720 / 6));
+	QuitButton.setPosition(Vector2f(1280 / 3, 720 / 2));
+	QuitText.setString("Quitter");
+	QuitText.setFont(font);
+	QuitText.setFillColor(sf::Color::Black);
+	QuitText.setPosition(Vector2f(QuitButton.getGlobalBounds().left + QuitButton.getGlobalBounds().width / 2.2, QuitButton.getGlobalBounds().top + QuitButton.getGlobalBounds().height / 3));
+
+	a_Button.setRadius(PlayButton.getLocalBounds().height / 3);
+	a_Button.setPosition(PlayButton.getPosition().x + 20, PlayButton.getPosition().y + 18);
+	A_ButtonTex->loadFromFile("Textures/A_Button.png");
+	A_ButtonTex->setSmooth(true);
+	a_Button.setTexture(A_ButtonTex);
+
+	b_Button.setRadius(QuitButton.getLocalBounds().height / 3);
+	b_Button.setPosition(QuitButton.getPosition().x + 20, QuitButton.getPosition().y + 18);
+	B_ButtonTex->loadFromFile("Textures/B_Button.png");
+	B_ButtonTex->setSmooth(true);
+	b_Button.setTexture(B_ButtonTex);
+}
+
+void initGameUI() {
+	for (int i = 0; i < 3; i++)
+	{
+		Entity *vie = new Entity(
+			initSquareRender(50, 33.3),
+			Vector2f(SquarePos1.x = 425, SquarePos1.y = 360));
+		vie->sprite->setTexture(Tank1UI);
+		vie->sprite->setOrigin(25, 16.65);
+		vie->sprite->setPosition(80 + i * 100, 695);
+		LifeTab.push_back(vie);
+	}
+
+	for (int i = 0; i < 3; i++)
+	{
+		Entity *vie = new Entity(
+			initSquareRender(50, 33.3),
+			Vector2f(SquarePos1.x = 425, SquarePos1.y = 360));
+		vie->sprite->setTexture(Tank2UI);
+		vie->sprite->setOrigin(25, 16.65);
+		vie->sprite->setPosition(1000 + i * 100, 25);
+		LifeTab.push_back(vie);
+	}
+}
+
+void DrawMainMenu(sf::RenderWindow &win) {
+	win.draw(Title);
+	win.draw(PlayButton);
+	win.draw(QuitButton);
+	win.draw(PlayText);
+	win.draw(QuitText);
+	win.draw(a_Button);
+	win.draw(b_Button);
+	win.display();
+}
+
+void drawGameUi(sf::RenderWindow &win) {
+	for (int i = 0; i < LifeTab.size(); i++)
+	{
+		LifeTab[i]->_draw(win);
+	}
 }
 
 void drawMap(sf::RenderWindow &win) {
@@ -213,7 +333,7 @@ void drawMap(sf::RenderWindow &win) {
 
 	auto k = 256 * 8;
 	Background.setTextureRect(IntRect(0, 0, k, k));
-	
+
 	win.draw(Background);
 	for (int i = 0; i < Objects.size(); i++)
 		Objects[i]->_draw(win);
@@ -247,53 +367,6 @@ void drawProjectile(sf::RenderWindow &win, int player) {
 	Objects.push_back(Proj);
 }
 
-void initMenu() {
-	font.loadFromFile("arial.ttf");
-	Title.setString("Un jeu de Tank");
-	Title.setStyle(sf::Text::Underlined + sf::Text::Italic);
-	Title.setFont(font);
-	Title.setFillColor(sf::Color::Red);
-	Title.setPosition(1280 / 2.8, 720 / 7);
-
-	PlayButton.setSize(Vector2f(1280 / 3, 720 / 6));
-	PlayButton.setPosition(Vector2f(1280 / 3, 720 / 4));
-	PlayText.setString("Jouer!");
-	PlayText.setFont(font);
-	PlayText.setFillColor(sf::Color::Black);
-	PlayText.setPosition(Vector2f(PlayButton.getGlobalBounds().left + PlayButton.getGlobalBounds().width / 2.2, PlayButton.getGlobalBounds().top + PlayButton.getGlobalBounds().height / 3));
-
-	QuitButton.setSize(Vector2f(1280 / 3, 720 / 6));
-	QuitButton.setPosition(Vector2f(1280 / 3, 720 / 2));
-	QuitText.setString("Quitter");
-	QuitText.setFont(font);
-	QuitText.setFillColor(sf::Color::Black);
-	QuitText.setPosition(Vector2f(QuitButton.getGlobalBounds().left + QuitButton.getGlobalBounds().width / 2.2, QuitButton.getGlobalBounds().top + QuitButton.getGlobalBounds().height / 3));
-
-	a_Button.setRadius(PlayButton.getLocalBounds().height / 3);
-	a_Button.setPosition(PlayButton.getPosition().x + 20, PlayButton.getPosition().y + 18);
-	A_ButtonTex->loadFromFile("Textures/A_Button.png");
-	A_ButtonTex->setSmooth(true);
-	a_Button.setTexture(A_ButtonTex);
-
-	b_Button.setRadius(QuitButton.getLocalBounds().height / 3);
-	b_Button.setPosition(QuitButton.getPosition().x + 20, QuitButton.getPosition().y + 18);
-	B_ButtonTex->loadFromFile("Textures/B_Button.png");
-	B_ButtonTex->setSmooth(true);
-	b_Button.setTexture(B_ButtonTex);
-}
-
-void DrawMainMenu(sf::RenderWindow &win, Text fps) {
-	win.draw(Title);
-	win.draw(PlayButton);
-	win.draw(QuitButton);
-	win.draw(PlayText);
-	win.draw(QuitText);
-	win.draw(a_Button);
-	win.draw(b_Button);
-	win.draw(fps);
-	win.display();
-}
-
 void InitParticles(Entity *parent, prtType type, int quantity)
 {
 	srand(time(NULL));
@@ -303,19 +376,15 @@ void InitParticles(Entity *parent, prtType type, int quantity)
 	{
 		i++;
 		sf::Shape *shp = new CircleShape(8, 64);
-		Vector2f spd((rand() %10 -5)/1.33 , (rand() %10 -5)/1.33);
+		Vector2f spd;
 		float life = rand() %90 +30;
 		sf::Color clr;
 		switch (type)
 		{
 		case Eplode:
+			spd = Vector2f((rand() % 10 - 5) / 1.33f, (rand() % 10 - 5) / 1.33f);
 			shp->setPosition(parent->sprite->getPosition());
 			clr = sf::Color::Red;
-			break;
-
-		case Trail:
-			shp->setPosition(parent->sprite->getPosition());
-			clr = sf::Color(200,200,200,255);
 			break;
 		}
 		Particle *prt = new Particle(shp, spd, life, clr, Smoke, type);
@@ -323,40 +392,41 @@ void InitParticles(Entity *parent, prtType type, int quantity)
 	}
 }
 
+void InitImpact(Entity *parent)
+{
+	Sprite *Impact = new Sprite(*Burn);
+	Impact->setOrigin(Vector2f(490, 490));
+	Impact->setPosition(Vector2f(parent->sprite->getPosition().x, parent->sprite->getPosition().y));
+	Impact->setScale(0.08, 0.08);
+	ImpactTab.push_back(*Impact);
+}
+
 int main()
 {
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 8;
 
-	sf::RenderWindow window(sf::VideoMode(1280,720), "I LOVE TANKS!", sf::Style::Default, settings);	
+	sf::RenderWindow window(sf::VideoMode(1280,720), "TRANKS, L'heritage - Aussi bon que le film", sf::Style::Default, settings);	
 	window.setVerticalSyncEnabled(true);
 
 	sf::Clock Clock;
-
-	sf::Time appStart = Clock.getElapsedTime();
 	sf::Time frameStart = Clock.getElapsedTime();
 	sf::Time prevFrameStart = Clock.getElapsedTime();
 
-	float fps[4] = { 0.f, 0.f, 0.f, 0.f };
-	int step = 0;
-	int every = 10;
-
-	sf::Text fpsText;
 	sf::Text EndText;
 	EndText.setPosition(1280/2, 720/3);
 	EndText.setFont(font);
 	EndText.setStyle(sf::Text::Italic);
-	fpsText.setFont(font);
-	fpsText.setFillColor(sf::Color::Red);
 
 	initMenu();
 	initTextures();
 	initMap();
+	initGameUI();
 
-	int frame = 0, shakeRate = 2, shakeDur = 30;
-	float squareSpeed1 = 1, squareSpeed2 = 1;
+	int frame = 0, shakeRate = 2, shakeDur = 30, knockbackRate =0;
+	float squareSpeed1 = 1, squareSpeed2 = 1, FireCount1 =0, FireCount2 =0;
 	float xR1 = 0, yR1 = 0, xL1 = 0, yL1 = 0, xR2 = 0, yR2 = 0, xL2 = 0, yL2 = 0, Trig1 = 0, Trig2 = 0; //Inputs J1 J2
-	bool Fire1 = false, Fire2 = false, EndGame = false, MainMenu = true, shake = false;
+	bool Fire1 = false, Fire2 = false, EndGame = false, shake = false;
 	Vector2f tank1Dir, tank2Dir;
 	Vector2i baseScreenPos;
 
@@ -366,342 +436,364 @@ int main()
 	while (window.isOpen())																			//tout le temps.
 	{
 		sf::Event event;
-		if (every == 0)
-		{
-			fpsText.setString("FPS: " + std::to_string(fps[(step - 1) % 4]));
-			every = 100;
-		}
-		every--;
 		frameStart = Clock.getElapsedTime();
 
-		while (MainMenu)
+		switch (State)
 		{
+		case MainMenu:
 			window.clear();
-			if (every == 0)
-			{
-				fpsText.setString("FPS: " + std::to_string(fps[(step - 1) % 4]));
-				every = 100;
-			}
-			every--;
-			frameStart = Clock.getElapsedTime();
-
-			DrawMainMenu(window, fpsText); //MainMenu
-
-			fps[step % 4] = 1.0 / (frameStart - prevFrameStart).asSeconds();
-			prevFrameStart = frameStart;
-			step++;
+			DrawMainMenu(window); //MainMenu
 
 			window.pollEvent(event);
-			if (event.type == sf::Event::JoystickButtonReleased){
+			if (event.type == sf::Event::JoystickButtonReleased) {
 				if (event.joystickButton.joystickId == 0 && event.joystickButton.button == 0)
-					MainMenu = false;
-				if (event.joystickButton.joystickId == 0 && event.joystickButton.button == 1){
+					State = Playing;
+				if (event.joystickButton.joystickId == 0 && event.joystickButton.button == 1) {
 					window.close();
-					MainMenu = false;
+					State = Quit;
 				}
 			}
 			if (event.type == sf::Event::Closed)
 			{
-				MainMenu = false;
 				window.close();
+				State = Quit;
 			}
-		}
+			break;
 
-		if ((Objects[0]->destroyed || Objects[1]->destroyed) && !EndGame)
-		{
-			Objects[0]->destroyed ? EndText.setFillColor(sf::Color(0x5A94FFff)) : EndText.setFillColor(sf::Color(0xFF5245ff));
-			Objects[0]->destroyed ? EndText.setString("	   Joueur Bleu gagne !\n Press R to Retry, Q to Quit") : EndText.setString("    Joueur Rouge gagne !\n Press R to Retry, Q to Quit");
-			FloatRect TextRect = EndText.getLocalBounds();
-			EndText.setOrigin(TextRect.left + TextRect.width / 2, TextRect.top + TextRect.height / 2);
-			EndGame = true;
-		}
 
-																					//recup les event clavier/pad	
-		while (window.pollEvent(event))
-		{
-			if (event.type == sf::Event::KeyReleased)
+		case Playing:
+			while (window.pollEvent(event))
 			{
-				if (event.key.code == sf::Keyboard::I)
-					printf("Instant fps %f\n", fps[(step - 1) % 4]);
+				if (event.type == sf::Event::KeyReleased)
+				{
+					if (event.key.code == sf::Keyboard::R && EndGame) {
+						EndGame = false;
+						Objects.clear();
+						LifeTab.clear();
+						window.clear();
+						initMap();
+						initGameUI();
+						squareSpeed1 = 1, squareSpeed2 = 1;
+						xR1 = 0, yR1 = 0, xL1 = 0, yL1 = 0, xR2 = 0, yR2 = 0, xL2 = 0, yL2 = 0, Trig1 = 0, Trig2 = 0;
+						Fire1 = false, Fire2 = false, EndGame = false;
+						EndText.setString("");
+					}
 
-				if (event.key.code == sf::Keyboard::F)
-					printf("fps %f\n", 0.25*(fps[0] + fps[1] + fps[2] + fps[3]));
-
-				if (event.key.code == sf::Keyboard::R && EndGame) {
-					EndGame = false;
-					Objects.clear();
-					window.clear();
-					initMap();
-					squareSpeed1 = 1, squareSpeed2 = 1;
-					xR1 = 0, yR1 = 0, xL1 = 0, yL1 = 0, xR2 = 0, yR2 = 0, xL2 = 0, yL2 = 0, Trig1 = 0, Trig2 = 0;
-					Fire1 = false, Fire2 = false, EndGame = false;
-					EndText.setString("");
+					if (event.key.code == sf::Keyboard::Q && EndGame)
+						window.close();
 				}
 
-				if (event.key.code == sf::Keyboard::Q && EndGame)
+				if (event.type == sf::Event::JoystickMoved) //Joystick Input Update
+				{
+					if (event.joystickMove.joystickId == 0)
+					{
+						if (event.joystickMove.axis == sf::Joystick::Axis::X)
+							xR1 = event.joystickMove.position;
+						if (event.joystickMove.axis == sf::Joystick::Axis::Y)
+							yR1 = event.joystickMove.position;
+						if (event.joystickMove.axis == sf::Joystick::Axis::U)
+							xL1 = event.joystickMove.position;
+						if (event.joystickMove.axis == sf::Joystick::Axis::V)
+							yL1 = event.joystickMove.position;
+						if (event.joystickMove.axis == sf::Joystick::Axis::Z)
+							Trig1 = event.joystickMove.position;
+					}
+
+					if (event.joystickMove.joystickId == 1)
+					{
+						if (event.joystickMove.axis == sf::Joystick::Axis::X)
+							xR2 = event.joystickMove.position;
+						if (event.joystickMove.axis == sf::Joystick::Axis::Y)
+							yR2 = event.joystickMove.position;
+						if (event.joystickMove.axis == sf::Joystick::Axis::U)
+							xL2 = event.joystickMove.position;
+						if (event.joystickMove.axis == sf::Joystick::Axis::V)
+							yL2 = event.joystickMove.position;
+						if (event.joystickMove.axis == sf::Joystick::Axis::Z)
+							Trig2 = event.joystickMove.position;
+					}
+				}
+
+				if (event.type == sf::Event::Closed)
 					window.close();
 			}
 
-			if (event.type == sf::Event::JoystickMoved) //Joystick Input Update
+			if (xR1 > 20 || xR1 < -20 || yR1 > 20 || yR1 < -20) //Mouvement J1
 			{
-				if (event.joystickMove.joystickId == 0)
-				{
-					if (event.joystickMove.axis == sf::Joystick::Axis::X)
-						xR1 = event.joystickMove.position;
-					if (event.joystickMove.axis == sf::Joystick::Axis::Y)
-						yR1 = event.joystickMove.position;
-					if (event.joystickMove.axis == sf::Joystick::Axis::U)
-						xL1 = event.joystickMove.position;
-					if (event.joystickMove.axis == sf::Joystick::Axis::V)
-						yL1 = event.joystickMove.position;
-					if (event.joystickMove.axis == sf::Joystick::Axis::Z)
-						Trig1 = event.joystickMove.position;
-				}
+				if (squareSpeed1 < 2)
+					squareSpeed1 += 0.05f;
+				SquarePos1.x += (xR1 / 100) * squareSpeed1;
+				SquarePos1.y += (yR1 / 100) * squareSpeed1;
+				tank1Dir = Vector2f(xR1, yR1);
+			}
+			else
+				if (squareSpeed1 > 0)
+					squareSpeed1 -= 0.3f;
 
-				if (event.joystickMove.joystickId == 1)
+			if (xR2 > 20 || xR2 < -20 || yR2 > 20 || yR2 < -20) //Mouvement J2
+			{
+				if (squareSpeed2 < 2)
+					squareSpeed2 += 0.05f;
+				SquarePos2.x += (xR2 / 100) * squareSpeed1;
+				SquarePos2.y += (yR2 / 100) * squareSpeed1;
+				tank2Dir = Vector2f(xR2, yR2);
+			}
+			else
+				if (squareSpeed2 > 0)
+					squareSpeed2 -= 0.3f;
+
+			if ((Trig1 > 80 || Trig1 < -80) && !Fire1) //Shoot J1
+			{
+				Vector2f Pos1 = Objects[0]->sprite->getPosition();
+				Fire1 = true;
+				drawProjectile(window, 0);
+				Animation *shot1 = new Animation(animName::Shot, Objects[0], LastCible[0]);
+				AnimTab.push_back(shot1);
+				Objects[0]->sprite->setPosition(Pos1.x - cos(LastCible[0]) * 5, Pos1.y - sin(LastCible[0]) * 5);
+			}
+			else if ((-10 < Trig1 && Trig1 < 10) && Fire1 && !Objects[0]->destroyed)
+			{
+				FireCount1++;
+				if (FireCount1 >= 25)
 				{
-					if (event.joystickMove.axis == sf::Joystick::Axis::X)
-						xR2 = event.joystickMove.position;
-					if (event.joystickMove.axis == sf::Joystick::Axis::Y)
-						yR2 = event.joystickMove.position;
-					if (event.joystickMove.axis == sf::Joystick::Axis::U)
-						xL2 = event.joystickMove.position;
-					if (event.joystickMove.axis == sf::Joystick::Axis::V)
-						yL2 = event.joystickMove.position;
-					if (event.joystickMove.axis == sf::Joystick::Axis::Z)
-						Trig2 = event.joystickMove.position;
+					Fire1 = false;
+					FireCount1 = 0;
 				}
 			}
 
-			if (event.type == sf::Event::Closed)
-				window.close();
-		}
+			window.clear();
+			drawMap(window);
+			window.draw(EndText);
+			drawGameUi(window);
 
-		if (xR1 > 20 || xR1 < -20 || yR1 > 20 || yR1 < -20) //Mouvement J1
-		{
-			if (squareSpeed1 < 2)
-				squareSpeed1 += 0.05f;
-			SquarePos1.x += (xR1 / 100) * squareSpeed1;
-			SquarePos1.y += (yR1 / 100) * squareSpeed1;
-			tank1Dir = Vector2f(xR1, yR1);
-		}
-		else
-			if (squareSpeed1 > 0)
-				squareSpeed1 -= 0.3f;
-
-		if (xR2 > 20 || xR2 < -20 || yR2 > 20 || yR2 < -20) //Mouvement J2
-		{
-			if (squareSpeed2 < 2)
-				squareSpeed2 += 0.05f;
-			SquarePos2.x += (xR2 / 100) * squareSpeed1;
-			SquarePos2.y += (yR2 / 100) * squareSpeed1;
-			tank2Dir = Vector2f(xR2, yR2);
-		}
-		else
-			if (squareSpeed2 > 0)
-				squareSpeed2 -= 0.3f;
-
-		if ((Trig1 > 80 || Trig1 < -80) && !Fire1) //Shoot J1
-		{
-			Fire1 = true;
-			drawProjectile(window, 0);
-			Animation *shot1 = new Animation(animName::Shot, Objects[0], LastCible[0]);
-			AnimTab.push_back(shot1);
-		}
-		else if ((-10 < Trig1 && Trig1 < 10) && Fire1 && !Objects[0]->destroyed)
-			Fire1 = false;
-		
-
-		if ((Trig2 > 80 || Trig2 < -80) && !Fire2) //Shoot J2
-		{
-			Fire2 = true;
-			drawProjectile(window, 1);
-			Animation *shot2 = new Animation(animName::Shot, Objects[1], LastCible[1]);
-			AnimTab.push_back(shot2);
-		}
-		else if ((-80 < Trig2 < 80) && Fire2 && !Objects[1]->destroyed)
-			Fire2 = false;
-
-		window.clear();																				//Nettoie la frame
-		drawMap(window);
-		window.draw(fpsText);
-		window.draw(EndText);
-
-		for (int i = 0; i < 2; i++)
-		{
-			switch (i)
+			if ((Trig2 > 80 || Trig2 < -80) && !Fire2) //Shoot J2
 			{
-			case 0:
-				if (Objects[i]->playable && Objects[i]->sprite != nullptr)
-				{
-					Objects[i]->sprite->setRotation(atan2(tank1Dir.y, tank1Dir.x) * (180 / PI));
-					LastRot[i] = Objects[i]->sprite->getRotation();
-					Objects[i]->sprite->setPosition(SquarePos1.x, SquarePos1.y);
-					drawCible(window, xL1, yL1, i);
-					LastPos[i] = Objects[i]->sprite->getPosition();
-					Objects[i]->box = Objects[i]->sprite->getGlobalBounds();
-				}
-
-				break;
-
-			case 1:
-				if (Objects[i]->playable && Objects[i]->sprite != nullptr)
-				{
-					Objects[i]->sprite->setRotation(atan2(tank2Dir.y, tank2Dir.x) * (180 / PI));
-					LastRot[i] = Objects[i]->sprite->getRotation();
-					Objects[1]->sprite->setPosition(SquarePos2.x, SquarePos2.y);
-					drawCible(window, xL2, yL2, i);
-					LastPos[i] = Objects[i]->sprite->getPosition();
-					Objects[i]->box = Objects[i]->sprite->getGlobalBounds();
-				}
-				break;
-
-			default:
-				break;
+				Vector2f Pos2 = Objects[1]->sprite->getPosition();
+				Fire2 = true;
+				drawProjectile(window, 1);
+				Animation *shot2 = new Animation(animName::Shot, Objects[1], LastCible[1]);
+				AnimTab.push_back(shot2);
+				Objects[1]->sprite->setPosition(Pos2.x - cos(LastCible[1]) * 5, Pos2.y - sin(LastCible[1]) * 5);
 			}
-		}
-
-		for (int i = 0; i < Objects.size(); i++) {
-			Objects[i]->Move();
-			Objects[i]->HittingUpdate();
-		}
-
-		for (int i = 0; i < Objects.size(); i++)
-		{
-			if (i != 0 && Objects[0]->box.intersects(Objects[i]->box) && Objects[0]->playable)
+			else if ((-80 < Trig2 < 80) && Fire2 && !Objects[1]->destroyed)
 			{
-				if (!Objects[i]->movable || Objects[i]->playable)	//Cas: Tank1 vs Wall
+				FireCount2++;
+				if (FireCount2 >= 25)
 				{
-					SquarePos1 = LastPos[0];
-					Objects[0]->sprite->setPosition(LastPos[0]);
+					Fire2 = false;
+					FireCount2 = 0;
 				}
-				else 						//Cas: Tank vs Proj
+			}
+
+			for (int i = 0; i < 2; i++)
+			{
+				switch (i)
 				{
-					Animation *hit = new Animation(animName::Hit, Objects[i], LastCible[0]);
-					AnimTab.push_back(hit);
-					if (!Objects[0]->hitted)
+				case 0:
+					if (Objects[i]->playable && Objects[i]->sprite != nullptr)
 					{
-						shake = true;
-						shakeRate = 3;
-						shakeDur = 30;
-						Objects[0]->hitted = true;
-						Objects[0]->Life -= 1;
-						if (Objects[0]->Life <= 0)
-						{
-							shakeRate = 2;
-							shakeDur = 60;
-							InitParticles(Objects[0], prtType::Eplode, 30);
-							Animation *boom = new Animation(animName::Explosion, Objects[0], LastCible[0]);
-							AnimTab.push_back(boom);
-							Objects[0]->Destroyed(Objects, 0);
-							Fire1 = true;
-						}
+						Objects[i]->sprite->setRotation(atan2(tank1Dir.y, tank1Dir.x) * (180 / PI));
+						LastRot[i] = Objects[i]->sprite->getRotation();
+						Objects[i]->sprite->setPosition(SquarePos1.x, SquarePos1.y);
+						drawCible(window, xL1, yL1, i);
+						LastPos[i] = Objects[i]->sprite->getPosition();
+						Objects[i]->box = Objects[i]->sprite->getGlobalBounds();
 					}
-					Objects.erase(Objects.begin() + i);
+
+					break;
+
+				case 1:
+					if (Objects[i]->playable && Objects[i]->sprite != nullptr)
+					{
+						Objects[i]->sprite->setRotation(atan2(tank2Dir.y, tank2Dir.x) * (180 / PI));
+						LastRot[i] = Objects[i]->sprite->getRotation();
+						Objects[1]->sprite->setPosition(SquarePos2.x, SquarePos2.y);
+						drawCible(window, xL2, yL2, i);
+						LastPos[i] = Objects[i]->sprite->getPosition();
+						Objects[i]->box = Objects[i]->sprite->getGlobalBounds();
+					}
+					break;
+
+				default:
 					break;
 				}
 			}
 
-			if (i != 1 && Objects[1]->box.intersects(Objects[i]->box) && i != 1 && Objects[1]->playable)
-			{
-				if (!Objects[i]->movable || Objects[i]->playable)	//Cas: Tank2 vs Wall
-				{
-					SquarePos2 = LastPos[1];
-					Objects[1]->sprite->setPosition(LastPos[1]);
-				}
-				else						//Cas: Tank vs Proj
-				{
-					Animation *hit = new Animation(animName::Hit, Objects[i], LastCible[0]);
-					AnimTab.push_back(hit);
-					if (!Objects[1]->hitted)
-					{
-						shake = true;
-						shakeRate = 3;
-						shakeDur = 30;
-						Objects[1]->hitted = true;
-						Objects[1]->Life -= 1;
-						if (Objects[1]->Life <= 0)
-						{
-							shakeRate = 2;
-							shakeDur = 60;
-							InitParticles(Objects[1], prtType::Eplode, 30);
-							Animation *boom = new Animation(animName::Explosion, Objects[1], LastCible[0]);
-							AnimTab.push_back(boom);
-							Objects[1]->Destroyed(Objects, 1);
-							Fire2 = true;
-						}
-					}
-					Objects.erase(Objects.begin() + i);
-					break;
-				}
+			for (int i = 0; i < Objects.size(); i++) {
+				Objects[i]->Move();
+				Objects[i]->HittingUpdate();
 			}
 
-			
-			for (int j = 2; j < Objects.size(); j++)
+			for (int i = 0; i < Objects.size(); i++)
 			{
-				if (i != j && i != 1 && i != 0 && Objects[i]->box.intersects(Objects[j]->box))
-					if (Objects[i]->movable && !Objects[j]->movable) //Cas: Proj vs Wall = Rebond || Destroy
+				if (i != 0 && Objects[0]->box.intersects(Objects[i]->box) && Objects[0]->playable)
+				{
+					if (!Objects[i]->movable || Objects[i]->playable)	//Cas: Tank1 vs Wall
 					{
-						Projectile * proj = dynamic_cast<Projectile*>(Objects[i]);
-						if (proj->Bounced)
+						printf("Contact");
+						SquarePos1 = LastPos[0];
+						Objects[0]->sprite->setPosition(LastPos[0]);
+					}
+					else 						//Cas: Tank vs Proj
+					{
+						InitImpact(Objects[i]);
+						Animation *hit = new Animation(animName::Hit, Objects[i], LastCible[0]);
+						AnimTab.push_back(hit);
+						if (!Objects[0]->hitted)
 						{
+							shake = true;
+							shakeRate = 3;
+							shakeDur = 30;
+							Objects[0]->hitted = true;
+							Objects[0]->Life -= 1;
+							Animation *boom = new Animation(animName::Explosion, LifeTab[Objects[0]->Life], LastCible[0]);
+							AnimTab.push_back(boom);
+							InitImpact(LifeTab[Objects[0]->Life]);
+							LifeTab.erase(LifeTab.begin() + Objects[0]->Life);
+							if (Objects[0]->Life <= 0)
+							{
+								shakeRate = 2;
+								shakeDur = 60;
+								InitParticles(Objects[0], prtType::Eplode, 30);
+								Animation *boom = new Animation(animName::Explosion, Objects[0], LastCible[0]);
+								AnimTab.push_back(boom);
+								Objects[0]->Destroyed(Objects, 0);
+								Fire1 = true;
+							}
+						}
+						Objects.erase(Objects.begin() + i);
+						break;
+					}
+				}
+
+				if (i != 1 && Objects[1]->box.intersects(Objects[i]->box) && i != 1 && Objects[1]->playable)
+				{
+					if (!Objects[i]->movable || Objects[i]->playable)	//Cas: Tank2 vs Wall
+					{
+						SquarePos2 = LastPos[1];
+						Objects[1]->sprite->setPosition(LastPos[1]);
+					}
+					else						//Cas: Tank vs Proj
+					{
+						InitImpact(Objects[i]);
+						Animation *hit = new Animation(animName::Hit, Objects[i], LastCible[0]);
+						AnimTab.push_back(hit);
+						if (!Objects[1]->hitted)
+						{
+							shake = true;
+							shakeRate = 3;
+							shakeDur = 30;
+							Objects[1]->hitted = true;
+							Objects[1]->Life -= 1;
+							Animation *boom = new Animation(animName::Explosion, LifeTab[Objects[0]->Life + Objects[1]->Life], LastCible[0]);
+							AnimTab.push_back(boom);
+							InitImpact(LifeTab[Objects[0]->Life + Objects[1]->Life]);
+							LifeTab.erase(LifeTab.begin() + Objects[0]->Life + Objects[1]->Life);
+							if (Objects[1]->Life <= 0)
+							{
+								shakeRate = 2;
+								shakeDur = 60;
+								InitParticles(Objects[1], prtType::Eplode, 30);
+								Animation *boom = new Animation(animName::Explosion, Objects[1], LastCible[0]);
+								AnimTab.push_back(boom);
+								Objects[1]->Destroyed(Objects, 1);
+								Fire2 = true;
+							}
+						}
+						Objects.erase(Objects.begin() + i);
+						break;
+					}
+				}
+
+
+				for (int j = 2; j < Objects.size(); j++)
+				{
+					if (i != j && i != 1 && i != 0 && Objects[i]->box.intersects(Objects[j]->box))
+						if (Objects[i]->movable && !Objects[j]->movable) //Cas: Proj vs Wall = Rebond || Destroy
+						{
+							Projectile * proj = dynamic_cast<Projectile*>(Objects[i]);
+							if (proj->Bounced || Objects[j]->destroyable)
+							{
+								InitImpact(Objects[i]);
+								Animation *hit = new Animation(animName::Hit, Objects[i], LastCible[0]);
+								AnimTab.push_back(hit);
+								Objects.erase(Objects.begin() + i);
+								if (Objects[j]->destroyable)
+									Objects.erase(Objects.begin() + j);
+							}
+							else
+								proj->Rebond(Objects[j]);
+							break;
+						}
+						else if (Objects[i]->movable && Objects[j]->movable) //Cas: Proj vs Proj = Destroy
+						{
+							InitImpact(Objects[i]);
 							Animation *hit = new Animation(animName::Hit, Objects[i], LastCible[0]);
 							AnimTab.push_back(hit);
 							Objects.erase(Objects.begin() + i);
+							Objects.erase(Objects.begin() + j - 1);
+							break;
 						}
-						else
-							proj->Rebond(Objects[j]);
-						break;
-					}
-					else if (Objects[i]->movable && Objects[j]->movable) //Cas: Proj vs Proj = Destroy
-					{
-						Animation *hit = new Animation(animName::Hit, Objects[i], LastCible[0]);
-						AnimTab.push_back(hit);
-						Objects.erase(Objects.begin() + i);
-						Objects.erase(Objects.begin() + j-1);
-						break;
-					}
+				}
+
 			}
-			
-		}
 
-		for (int i = 0; i < AnimTab.size(); i++)
-		{
-			window.draw(*AnimTab[i]->sprite);
-			AnimTab[i]->update((frameStart - prevFrameStart).asSeconds());
-			if (AnimTab[i]->completed) AnimTab.erase(AnimTab.begin() + i);
-		}
-		for (int i = 0; i < ParticleTab.size(); i++)
-		{
-			ParticleTab[i]->Update();
-			if (ParticleTab[i]->Killed)
-				ParticleTab.erase(ParticleTab.begin() + i);
-			else
-				ParticleTab[i]->draw(window);
-		}
-
-		if (shake)
-		{
-			frame++;
-			if (frame % shakeRate == 0)
-				if (shakeRate == 2)
-					window.setPosition(Vector2i(baseScreenPos.x + rand() % 15 -10, baseScreenPos.y + rand() % 15 -10));
-				else
-					window.setPosition(Vector2i(baseScreenPos.x + rand() % 10 - 5, baseScreenPos.y + rand() % 10 - 5));
-			if (frame > shakeDur)
+			if ((Objects[0]->destroyed || Objects[1]->destroyed) && !EndGame)
 			{
-				frame = 0;
-				shake = false;
-				window.setPosition(baseScreenPos);
+				Objects[0]->destroyed ? EndText.setFillColor(sf::Color(0x5A94FFff)) : EndText.setFillColor(sf::Color(0xFF5245ff));
+				Objects[0]->destroyed ? EndText.setString("	   Joueur Bleu gagne !\n Press R to Retry, Q to Quit") : EndText.setString("    Joueur Rouge gagne !\n Press R to Retry, Q to Quit");
+				FloatRect TextRect = EndText.getLocalBounds();
+				EndText.setOrigin(TextRect.left + TextRect.width / 2, TextRect.top + TextRect.height / 2);
+				EndGame = true;
 			}
+
+			for (int i = 0; i < ImpactTab.size(); i++)
+			{
+				window.draw(ImpactTab[i]);
+				Color ImpactColor = ImpactTab[i].getColor();
+				if (ImpactColor.a <= 0)
+					ImpactTab.erase(ImpactTab.begin() + i);
+				else
+					ImpactTab[i].setColor(sf::Color(ImpactColor.r, ImpactColor.g, ImpactColor.b, ImpactColor.a - 2.125));
+			}
+			for (int i = 0; i < AnimTab.size(); i++)
+			{
+				window.draw(*AnimTab[i]->sprite);
+				AnimTab[i]->update((frameStart - prevFrameStart).asSeconds());
+				if (AnimTab[i]->completed) AnimTab.erase(AnimTab.begin() + i);
+			}
+			for (int i = 0; i < ParticleTab.size(); i++)
+			{
+				ParticleTab[i]->Update();
+				if (ParticleTab[i]->Killed)
+					ParticleTab.erase(ParticleTab.begin() + i);
+				else
+					ParticleTab[i]->draw(window);
+			}
+
+			if (shake)
+			{
+				frame++;
+				if (frame % shakeRate == 0)
+					if (shakeRate == 2)
+						window.setPosition(Vector2i(baseScreenPos.x + rand() % 15 - 10, baseScreenPos.y + rand() % 15 - 10));
+					else
+						window.setPosition(Vector2i(baseScreenPos.x + rand() % 10 - 5, baseScreenPos.y + rand() % 10 - 5));
+				if (frame > shakeDur)
+				{
+					frame = 0;
+					shake = false;
+					window.setPosition(baseScreenPos);
+				}
+			}
+
+			window.display();																			//Ca dessine et attends la vsync.
+			break;
+
+		case Quit:
+			break;
 		}
-
-		window.display();																			//Ca dessine et attends la vsync.
-
-		fps[step % 4] = 1.0 / (frameStart - prevFrameStart).asSeconds();
 		prevFrameStart = frameStart;
-
-		step++;
 	}
 
 	return 0;

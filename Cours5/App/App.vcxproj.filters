@@ -403,7 +403,7 @@
     <Image Include="Textures\Fissure.png">
       <Filter>Fichiers sources\Textures</Filter>
     </Image>
-    <Image Include="Textures\Shield.png">
+    <Image Include="Textures\Burned.png">
       <Filter>Fichiers sources\Textures</Filter>
     </Image>
   </ItemGroup>
