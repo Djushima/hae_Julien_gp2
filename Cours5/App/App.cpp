@@ -1,7 +1,6 @@
 // App.cpp : Ce fichier contient la fonction 'main'. L'exécution du programme commence et se termine à cet endroit.
 //
 
-#include <Box2D/Box2D.h>
 #include <SFML/Graphics.hpp>
 #include <direct.h>
 #include <iostream>
