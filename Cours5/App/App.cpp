@@ -434,7 +434,7 @@ void Beacon(sf::RenderWindow &win)
 	{
 		beac.setSize(Vector2f(1600, 1600));
 		beac.setTexture(BeaconTex);
-		beac.setFillColor(sf::Color(255, 255, 255, 120));
+		beac.setFillColor(sf::Color(255, 255, 255, 25));
 		beac.setOrigin(800, 800);
 		beac.setPosition(640, 360);
 	}
@@ -580,7 +580,7 @@ int main()
 
 			if (xR1 > 20 || xR1 < -20 || yR1 > 20 || yR1 < -20) //Mouvement J1
 			{
-				if (squareSpeed1 < 2)
+				if (squareSpeed1 < 3)
 					squareSpeed1 += 0.05f;
 				SquarePos1.x += (xR1 / 100) * squareSpeed1;
 				SquarePos1.y += (yR1 / 100) * squareSpeed1;
@@ -592,7 +592,7 @@ int main()
 
 			if (xR2 > 20 || xR2 < -20 || yR2 > 20 || yR2 < -20) //Mouvement J2
 			{
-				if (squareSpeed2 < 2)
+				if (squareSpeed2 < 3)
 					squareSpeed2 += 0.05f;
 				SquarePos2.x += (xR2 / 100) * squareSpeed2;
 				SquarePos2.y += (yR2 / 100) * squareSpeed2;
@@ -616,7 +616,7 @@ int main()
 			else if ((-10 < Trig1 && Trig1 < 10) && Fire1 && !Objects[0]->destroyed)
 			{
 				FireCount1++;
-				if (FireCount1 >= 15)
+				if (FireCount1 >= 5)
 				{
 					Fire1 = false;
 					FireCount1 = 0;
@@ -634,10 +634,10 @@ int main()
 				ShotSFX2.setBuffer(ShotSound);
 				ShotSFX2.play();
 			}
-			else if ((-80 < Trig2 < 80) && Fire2 && !Objects[1]->destroyed)
+			else if ((-10 < Trig2 && Trig2 < 10) && Fire2 && !Objects[1]->destroyed)
 			{
 				FireCount2++;
-				if (FireCount2 >= 15)
+				if (FireCount2 >= 5)
 				{
 					Fire2 = false;
 					FireCount2 = 0;
