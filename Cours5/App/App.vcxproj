@@ -97,7 +97,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SFML_DIR)\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;sfml-audio.lib;opengl32.lib;freetype.lib;winmm.lib;openal32.lib;flac.lib;vorbisenc.lib;vorbis.lib;vorbisfile.lib;ogg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;sfml-audio-d.lib;opengl32.lib;freetype.lib;winmm.lib;openal32.lib;flac.lib;vorbisenc.lib;vorbis.lib;vorbisfile.lib;ogg.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -430,6 +430,7 @@
     <Image Include="Animation SpriteSheet\Small_Hit.png" />
     <Image Include="Textures\A_Button.png" />
     <Image Include="Textures\Background.png" />
+    <Image Include="Textures\Beacon.png" />
     <Image Include="Textures\Blue tank -canon.png" />
     <Image Include="Textures\bullet1.png" />
     <Image Include="Textures\bullet2.png" />
@@ -437,12 +438,19 @@
     <Image Include="Textures\B_Button.png" />
     <Image Include="Textures\Canon Bleu.png" />
     <Image Include="Textures\Canon Rouge.png" />
-    <Image Include="Textures\Fissure.png" />
     <Image Include="Textures\Red tank -canon.png" />
     <Image Include="Textures\Smoke.png" />
     <Image Include="Textures\wall.png" />
     <Image Include="Textures\Wall_Cube.jpg" />
     <Image Include="Textures\wood_Crate.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="Sound\BGM.wav" />
+    <Media Include="Sound\Bounce.wav" />
+    <Media Include="Sound\Explosion.wav" />
+    <Media Include="Sound\Hit.wav" />
+    <Media Include="Sound\Shot1.wav" />
+    <Media Include="Sound\Shot2.wav" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

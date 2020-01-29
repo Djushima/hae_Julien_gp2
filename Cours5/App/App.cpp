@@ -28,15 +28,16 @@ static Vector2f SquarePos1, SquarePos2;
 static const double PI = 3.141592653589793238463;
 
 
-RectangleShape PlayButton, QuitButton;
+RectangleShape bg, beac;
 CircleShape a_Button, b_Button;
-Text Title, PlayText, QuitText;
+Text Title, PlayText, QuitText, CreditText;
+Sprite Tank1, Tank2;
 Texture *A_ButtonTex = new Texture(), *B_ButtonTex = new Texture(), *BG = new Texture(), *Border = new Texture(),
 		*Bullet1 = new Texture(), *Bullet2 = new Texture(), *tank1Tex = new Texture(), *tank2Tex = new Texture(),
 		*CanonTank1Tex = new Texture(), *CanonTank2Tex = new Texture(), *Tank1UI = new Texture(), *Tank2UI = new Texture(),
-		*WallTex = new Texture(), *WoodTex = new Texture(), *Burn = new Texture(), *Smoke = new Texture();
-Font fontTitre, font;
-sf::Sound SFX;
+		*WallTex = new Texture(), *WoodTex = new Texture(), *Burn = new Texture(), *Smoke = new Texture(), *BeaconTex = new Texture();
+Font font;
+sf::Sound HitSFX1, HitSFX2, ExplosionSFX1, ExplosionSFX2, ShotSFX1, ShotSFX2, BounceSFX;
 sf::Music BGM;
 sf::SoundBuffer HitSound, ExplosionSound, ShotSound, BounceSound;
 
@@ -56,7 +57,7 @@ RectangleShape* initSquareRender(int x, int y) {
 void initSound() {
 	if (!HitSound.loadFromFile("Sound/Hit.wav"))
 		printf("Error Load sound HIT");
-	if (!ShotSound.loadFromFile("Sound/Shot.wav"))
+	if (!ShotSound.loadFromFile("Sound/Shot1.wav"))
 		printf("Error Load sound HIT");
 	if (!ExplosionSound.loadFromFile("Sound/Explosion.wav"))
 		printf("Error Load sound HIT");
@@ -64,6 +65,8 @@ void initSound() {
 		printf("Error Load sound HIT");
 	if (!BGM.openFromFile("Sound/BGM.wav"))
 		printf("Error Load sound HIT");
+	else
+		BGM.setLoop(true);
 }
 
 void initTextures() {
@@ -111,6 +114,9 @@ void initTextures() {
 	if (!Tank2UI->loadFromFile("Textures/Blue tank.png"))
 		printf("Tank2UI Texture Error Load");
 	Tank2UI->setSmooth(true);
+	if (!BeaconTex->loadFromFile("Textures/Beacon.png"))
+		printf("Beacon Texture Error Load");
+	BeaconTex->setSmooth(true);
 }
 
 void initMap() {
@@ -121,8 +127,6 @@ void initMap() {
 	Char1->sprite->setOrigin(Vector2f(30, 20));
 	Char1->movable = true;
 	Char1->playable = true;
-	Char1->sprite->setOutlineThickness(1);
-	Char1->sprite->setOutlineColor(sf::Color::Red);
 	Objects.push_back(Char1);
 
 	auto Char2 = new Entity(
@@ -265,39 +269,52 @@ void initMap() {
 }
 
 void initMenu() {
-	fontTitre.loadFromFile("Tr2n.ttf");
 	font.loadFromFile("earthorbiter.ttf");
-	Title.setString("TRANKS");
-	Title.setStyle(sf::Text::Underlined);
-	Title.setFont(fontTitre);
-	Title.setFillColor(sf::Color::Red);
-	Title.setPosition(1280 / 2.2, 720 / 7);
+	Title.setString("Call of Tanks:\n    1v1 me Bro");
+	Title.setFont(font);
+	Title.setCharacterSize(50);
+	Title.setFillColor(sf::Color::White);
+	Title.setPosition(430, 120);
 
-	PlayButton.setSize(Vector2f(1280 / 3, 720 / 6));
-	PlayButton.setPosition(Vector2f(1280 / 3, 720 / 4));
-	PlayText.setString("Jouer");
+	PlayText.setString("Press A to Play");
 	PlayText.setFont(font);
-	PlayText.setFillColor(sf::Color::Black);
-	PlayText.setPosition(Vector2f(PlayButton.getGlobalBounds().left + PlayButton.getGlobalBounds().width / 2.2, PlayButton.getGlobalBounds().top + PlayButton.getGlobalBounds().height / 3));
+	PlayText.setFillColor(sf::Color::Green);
+	PlayText.setPosition(200, 480);
 
-	QuitButton.setSize(Vector2f(1280 / 3, 720 / 6));
-	QuitButton.setPosition(Vector2f(1280 / 3, 720 / 2));
-	QuitText.setString("Quitter");
+	QuitText.setString("Press B to Quit");
 	QuitText.setFont(font);
-	QuitText.setFillColor(sf::Color::Black);
-	QuitText.setPosition(Vector2f(QuitButton.getGlobalBounds().left + QuitButton.getGlobalBounds().width / 2.2, QuitButton.getGlobalBounds().top + QuitButton.getGlobalBounds().height / 3));
+	QuitText.setFillColor(sf::Color::Red);
+	QuitText.setPosition(840, 480);
 
-	a_Button.setRadius(PlayButton.getLocalBounds().height / 3);
-	a_Button.setPosition(PlayButton.getPosition().x + 20, PlayButton.getPosition().y + 18);
+	a_Button.setRadius(30);
+	a_Button.setPosition(PlayText.getPosition().x + 105, PlayText.getPosition().y + 60);
 	A_ButtonTex->loadFromFile("Textures/A_Button.png");
 	A_ButtonTex->setSmooth(true);
 	a_Button.setTexture(A_ButtonTex);
 
-	b_Button.setRadius(QuitButton.getLocalBounds().height / 3);
-	b_Button.setPosition(QuitButton.getPosition().x + 20, QuitButton.getPosition().y + 18);
+	b_Button.setRadius(30);
+	b_Button.setPosition(QuitText.getPosition().x + 105, QuitText.getPosition().y + 60);
 	B_ButtonTex->loadFromFile("Textures/B_Button.png");
 	B_ButtonTex->setSmooth(true);
 	b_Button.setTexture(B_ButtonTex);
+
+	bg.setSize(Vector2f(1280, 720));
+	bg.setTexture(BG);
+	auto k = 256 * 8;
+	bg.setTextureRect(IntRect(0, 0, k, k));
+
+	Tank1.setTexture(*Tank1UI);
+	Tank2.setTexture(*Tank2UI);
+	Tank1.setPosition(PlayText.getPosition().x + 230, PlayText.getPosition().y - 60);
+	Tank1.setRotation(180);
+	Tank2.setPosition(QuitText.getPosition().x + 230, QuitText.getPosition().y - 60);
+	Tank2.setRotation(180);
+
+	CreditText.setString("Division Blade by Schematist: http://www.schematistmusic.com / Music promoted by https://www.free-stock-music.com \n				Creative Commons Attribution 3.0 Unported License https://creativecommons.org/licenses/by/3.0/");
+	CreditText.setCharacterSize(12);
+	CreditText.setFont(font);
+	CreditText.setPosition(200, 680);
+	CreditText.setFillColor(sf::Color::White);
 }
 
 void initGameUI() {
@@ -325,13 +342,15 @@ void initGameUI() {
 }
 
 void DrawMainMenu(sf::RenderWindow &win) {
+	win.draw(bg);
 	win.draw(Title);
-	win.draw(PlayButton);
-	win.draw(QuitButton);
 	win.draw(PlayText);
 	win.draw(QuitText);
 	win.draw(a_Button);
 	win.draw(b_Button);
+	win.draw(Tank1);
+	win.draw(Tank2);
+	win.draw(CreditText);
 	win.display();
 }
 
@@ -343,14 +362,7 @@ void drawGameUi(sf::RenderWindow &win) {
 }
 
 void drawMap(sf::RenderWindow &win) {
-	RectangleShape Background;
-	Background.setSize(Vector2f(1280, 720));
-	Background.setTexture(BG);
-
-	auto k = 256 * 8;
-	Background.setTextureRect(IntRect(0, 0, k, k));
-
-	win.draw(Background);
+	win.draw(bg);
 	for (int i = 0; i < Objects.size(); i++)
 		Objects[i]->_draw(win);
 }
@@ -417,12 +429,26 @@ void InitImpact(Entity *parent)
 	ImpactTab.push_back(*Impact);
 }
 
+void Beacon(sf::RenderWindow &win)
+{
+	if (beac.getTexture() != BeaconTex)
+	{
+		beac.setSize(Vector2f(1600, 1600));
+		beac.setTexture(BeaconTex);
+		beac.setFillColor(sf::Color(255, 255, 255, 120));
+		beac.setOrigin(800, 800);
+		beac.setPosition(640, 360);
+	}
+	win.draw(beac);
+	beac.setRotation(beac.getRotation() + 2);		
+}
+
 int main()
 {
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 8;
 
-	sf::RenderWindow window(sf::VideoMode(1280,720), "TRANKS, L'heritage - Aussi bon que le film", sf::Style::Default, settings);	
+	sf::RenderWindow window(sf::VideoMode(1280,720), "Call of Tanks", sf::Style::Default, settings);	
 	window.setVerticalSyncEnabled(true);
 
 	sf::Clock Clock;
@@ -430,13 +456,16 @@ int main()
 	sf::Time prevFrameStart = Clock.getElapsedTime();
 
 	sf::Text EndText;
-	EndText.setPosition(1280/2, 720/3);
+	EndText.setPosition(320, 180);
 	EndText.setFont(font);
+	EndText.setCharacterSize(40);
+	EndText.setOutlineColor(sf::Color::Black);
+	EndText.setOutlineThickness(1);
 	EndText.setStyle(sf::Text::Italic);
 
-	//initSound();
-	initMenu();
+	initSound();
 	initTextures();
+	initMenu();
 	initMap();
 	initGameUI();
 
@@ -448,19 +477,20 @@ int main()
 	Vector2i baseScreenPos;
 
 	baseScreenPos = window.getPosition();
+	BGM.play();
 
 
 	while (window.isOpen())																			//tout le temps.
 	{
 		sf::Event event;
 		frameStart = Clock.getElapsedTime();
-		BGM.play();
 
 		switch (State)
 		{
 		case MainMenu:
 			window.clear();
 			DrawMainMenu(window); //MainMenu
+			drawMap(window);
 
 			window.pollEvent(event);
 			if (event.type == sf::Event::JoystickButtonReleased) {
@@ -482,9 +512,9 @@ int main()
 		case Playing:
 			while (window.pollEvent(event))
 			{
-				if (event.type == sf::Event::KeyReleased)
+				if (event.type == sf::Event::JoystickButtonReleased)
 				{
-					if (event.key.code == sf::Keyboard::R /*&& EndGame*/) { //Attention, enlever com dans release.
+					if (event.joystickButton.joystickId == 0 && event.joystickButton.button == 3 && EndGame) {
 						EndGame = false;
 						Objects.clear();
 						LifeTab.clear();
@@ -497,7 +527,7 @@ int main()
 						EndText.setString("");
 					}
 
-					if (event.key.code == sf::Keyboard::Q && EndGame)
+					if (event.joystickButton.joystickId == 0 && event.joystickButton.button == 1 && EndGame)
 						window.close();
 				}
 
@@ -581,8 +611,8 @@ int main()
 				Animation *shot1 = new Animation(animName::Shot, Objects[0], LastCible[0]);
 				AnimTab.push_back(shot1);
 				Objects[0]->sprite->setPosition(Pos1.x - cos(LastCible[0]) * 5, Pos1.y - sin(LastCible[0]) * 5);
-				//SFX.setBuffer(ShotSound);
-				//SFX.play();
+				ShotSFX1.setBuffer(ShotSound);
+				ShotSFX1.play();
 			}
 			else if ((-10 < Trig1 && Trig1 < 10) && Fire1 && !Objects[0]->destroyed)
 			{
@@ -602,8 +632,8 @@ int main()
 				Animation *shot2 = new Animation(animName::Shot, Objects[1], LastCible[1]);
 				AnimTab.push_back(shot2);
 				Objects[1]->sprite->setPosition(Pos2.x - cos(LastCible[1]) * 5, Pos2.y - sin(LastCible[1]) * 5);
-				//SFX.setBuffer(ShotSound);
-				//SFX.play();
+				ShotSFX2.setBuffer(ShotSound);
+				ShotSFX2.play();
 			}
 			else if ((-80 < Trig2 < 80) && Fire2 && !Objects[1]->destroyed)
 			{
@@ -627,7 +657,7 @@ int main()
 				case 0:
 					if (Objects[i]->playable && Objects[i]->Life != 0)
 					{
-						Objects[i]->sprite->setRotation(atan2(tank1Dir.y, tank1Dir.x) * (180 / PI)); //Pb de collisions avec rotation non opti
+						Objects[i]->sprite->setRotation(atan2(tank1Dir.y, tank1Dir.x) * (180 / PI)); //collisions avec rotation non opti
 						Objects[i]->sprite->setPosition(SquarePos1.x, SquarePos1.y);
 						drawCible(window, xL1, yL1, i);
 						Objects[i]->box.top = Objects[i]->sprite->getPosition().y - 20;
@@ -641,7 +671,7 @@ int main()
 				case 1:
 					if (Objects[i]->playable && Objects[i]->Life != 0)
 					{
-						Objects[i]->sprite->setRotation(atan2(tank2Dir.y, tank2Dir.x) * (180 / PI)); //Pb de collisions avec rotation non opti
+						Objects[i]->sprite->setRotation(atan2(tank2Dir.y, tank2Dir.x) * (180 / PI)); //collisions avec rotation non opti
 						Objects[1]->sprite->setPosition(SquarePos2.x, SquarePos2.y);
 						drawCible(window, xL2, yL2, i);
 						Objects[i]->box.top = Objects[i]->sprite->getPosition().y - 20;
@@ -671,13 +701,13 @@ int main()
 						Objects[0]->sprite->setPosition(LastPos[0]);
 						Objects[0]->sprite->setRotation(LastRot[0]);
 					}
-					else 						//Cas: Tank vs Proj
+					else 						//Cas: Tank1 vs Proj
 					{
 						InitImpact(Objects[i]);
 						Animation *hit = new Animation(animName::Hit, Objects[i], LastCible[0]);
 						AnimTab.push_back(hit);
-						//SFX.setBuffer(HitSound);
-						//SFX.play();
+						HitSFX1.setBuffer(HitSound);
+						HitSFX1.play();
 						if (!Objects[0]->hitted)
 						{
 							shake = true;
@@ -698,8 +728,8 @@ int main()
 								AnimTab.push_back(boom);
 								Objects[0]->Destroyed(Objects, 0);
 								Fire1 = true;
-								//SFX.setBuffer(ExplosionSound);
-								//SFX.play();
+								ExplosionSFX1.setBuffer(ExplosionSound);
+								ExplosionSFX1.play();
 							}
 						}
 						Objects.erase(Objects.begin() + i);
@@ -715,13 +745,13 @@ int main()
 						Objects[1]->sprite->setPosition(LastPos[1]);
 						Objects[1]->sprite->setRotation(LastRot[1]);
 					}
-					else						//Cas: Tank vs Proj
+					else						//Cas: Tank2 vs Proj
 					{
 						InitImpact(Objects[i]);
 						Animation *hit = new Animation(animName::Hit, Objects[i], LastCible[0]);
 						AnimTab.push_back(hit);
-						//SFX.setBuffer(HitSound);
-						//SFX.play();
+						HitSFX2.setBuffer(HitSound);
+						HitSFX2.play();
 						if (!Objects[1]->hitted)
 						{
 							shake = true;
@@ -742,8 +772,8 @@ int main()
 								AnimTab.push_back(boom);
 								Objects[1]->Destroyed(Objects, 1);
 								Fire2 = true;
-								//SFX.setBuffer(ExplosionSound);
-								//SFX.play();
+								ExplosionSFX2.setBuffer(ExplosionSound);
+								ExplosionSFX2.play();
 							}
 						}
 						Objects.erase(Objects.begin() + i);
@@ -760,8 +790,8 @@ int main()
 							Projectile * proj = dynamic_cast<Projectile*>(Objects[i]);
 							if (proj->Bounced || Objects[j]->destroyable)
 							{
-								//SFX.setBuffer(HitSound);
-								//SFX.play();
+								HitSFX1.setBuffer(HitSound);
+								HitSFX1.play();
 								InitImpact(Objects[i]);
 								Animation *hit = new Animation(animName::Hit, Objects[i], LastCible[0]);
 								AnimTab.push_back(hit);
@@ -771,10 +801,10 @@ int main()
 							}
 							else
 							{
-								//SFX.setBuffer(BounceSound);
-								//SFX.play();
-							}
+								BounceSFX.setBuffer(BounceSound);
+								BounceSFX.play();
 								proj->Rebond(Objects[j]);
+							}
 							break;
 						}
 						else if (Objects[i]->movable && Objects[j]->movable) //Cas: Proj vs Proj = Destroy
@@ -793,9 +823,7 @@ int main()
 			if ((Objects[0]->destroyed || Objects[1]->destroyed) && !EndGame)
 			{
 				Objects[0]->destroyed ? EndText.setFillColor(sf::Color(0x5A94FFff)) : EndText.setFillColor(sf::Color(0xFF5245ff));
-				Objects[0]->destroyed ? EndText.setString("	   Joueur Bleu gagne !\n Press R to Retry, Q to Quit") : EndText.setString("    Joueur Rouge gagne !\n Press R to Retry, Q to Quit");
-				FloatRect TextRect = EndText.getLocalBounds();
-				EndText.setOrigin(TextRect.left + TextRect.width / 2, TextRect.top + TextRect.height / 2);
+				Objects[0]->destroyed ? EndText.setString("		  Blue Player Win !\n Press Y to Retry, B to Quit") : EndText.setString("		  Red Player Win !\n Press Y to Retry, B to Quit");
 				EndGame = true;
 			}
 
@@ -838,6 +866,8 @@ int main()
 					window.setPosition(baseScreenPos);
 				}
 			}
+
+			Beacon(window);
 
 			window.display();																			//Ca dessine et attends la vsync.
 			break;

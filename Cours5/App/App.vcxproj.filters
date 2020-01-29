@@ -22,6 +22,9 @@
     <Filter Include="Fichiers sources\Animations_SpriteSheet">
       <UniqueIdentifier>{16bba656-0945-4246-a869-6935a124e034}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Fichiers sources\Sound">
+      <UniqueIdentifier>{229b5499-0727-4a3e-844c-441559394a80}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -400,11 +403,31 @@
     <Image Include="Textures\wood_Crate.jpg">
       <Filter>Fichiers sources\Textures</Filter>
     </Image>
-    <Image Include="Textures\Fissure.png">
-      <Filter>Fichiers sources\Textures</Filter>
-    </Image>
     <Image Include="Textures\Burned.png">
       <Filter>Fichiers sources\Textures</Filter>
     </Image>
+    <Image Include="Textures\Beacon.png">
+      <Filter>Fichiers sources\Textures</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="Sound\BGM.wav">
+      <Filter>Fichiers sources\Sound</Filter>
+    </Media>
+    <Media Include="Sound\Bounce.wav">
+      <Filter>Fichiers sources\Sound</Filter>
+    </Media>
+    <Media Include="Sound\Explosion.wav">
+      <Filter>Fichiers sources\Sound</Filter>
+    </Media>
+    <Media Include="Sound\Hit.wav">
+      <Filter>Fichiers sources\Sound</Filter>
+    </Media>
+    <Media Include="Sound\Shot1.wav">
+      <Filter>Fichiers sources\Sound</Filter>
+    </Media>
+    <Media Include="Sound\Shot2.wav">
+      <Filter>Fichiers sources\Sound</Filter>
+    </Media>
   </ItemGroup>
 </Project>
