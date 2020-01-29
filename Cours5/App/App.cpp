@@ -104,6 +104,8 @@ void initMap() {
 	Char1->sprite->setOrigin(Vector2f(30, 20));
 	Char1->movable = true;
 	Char1->playable = true;
+	Char1->sprite->setOutlineThickness(1);
+	Char1->sprite->setOutlineColor(sf::Color::Red);
 	Objects.push_back(Char1);
 
 	auto Char2 = new Entity(
@@ -636,6 +638,8 @@ int main()
 					{
 						SquarePos1 = LastPos[0];
 						Objects[0]->sprite->setPosition(LastPos[0]);
+						Objects[0]->sprite->setRotation(LastRot[0]);
+						Objects[0]->box = Objects[0]->sprite->getGlobalBounds();
 					}
 					else 						//Cas: Tank vs Proj
 					{
