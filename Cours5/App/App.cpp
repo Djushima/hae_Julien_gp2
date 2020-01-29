@@ -11,6 +11,7 @@
 #include "Projectile.hpp"
 #include "Anims.hpp"
 #include "Particle.hpp"
+#include "SFML/Audio.hpp"
 
 using namespace sf;
 
@@ -35,6 +36,9 @@ Texture *A_ButtonTex = new Texture(), *B_ButtonTex = new Texture(), *BG = new Te
 		*CanonTank1Tex = new Texture(), *CanonTank2Tex = new Texture(), *Tank1UI = new Texture(), *Tank2UI = new Texture(),
 		*WallTex = new Texture(), *WoodTex = new Texture(), *Burn = new Texture(), *Smoke = new Texture();
 Font fontTitre, font;
+sf::Sound SFX;
+sf::Music BGM;
+sf::SoundBuffer HitSound, ExplosionSound, ShotSound, BounceSound;
 
 enum GameState {
 	MainMenu,
@@ -47,6 +51,19 @@ static GameState State = MainMenu;
 RectangleShape* initSquareRender(int x, int y) {
 	auto Square = new RectangleShape(Vector2f(x,y));
 	return Square;
+}
+
+void initSound() {
+	if (!HitSound.loadFromFile("Sound/Hit.wav"))
+		printf("Error Load sound HIT");
+	if (!ShotSound.loadFromFile("Sound/Shot.wav"))
+		printf("Error Load sound HIT");
+	if (!ExplosionSound.loadFromFile("Sound/Explosion.wav"))
+		printf("Error Load sound HIT");
+	if (!BounceSound.loadFromFile("Sound/Bounce.wav"))
+		printf("Error Load sound HIT");
+	if (!BGM.openFromFile("Sound/BGM.wav"))
+		printf("Error Load sound HIT");
 }
 
 void initTextures() {
@@ -238,6 +255,8 @@ void initMap() {
 		DestructWall->box = DestructWall->sprite->getGlobalBounds();
 		for (int j = 0; j < Objects.size(); j++)
 		{
+			if (DestructWall->box.intersects(Objects[0]->sprite->getGlobalBounds()) || DestructWall->box.intersects(Objects[1]->sprite->getGlobalBounds()))
+				goto restart;
 			if (DestructWall->box.intersects(Objects[j]->box))
 				goto restart;
 		}
@@ -415,6 +434,7 @@ int main()
 	EndText.setFont(font);
 	EndText.setStyle(sf::Text::Italic);
 
+	//initSound();
 	initMenu();
 	initTextures();
 	initMap();
@@ -434,6 +454,7 @@ int main()
 	{
 		sf::Event event;
 		frameStart = Clock.getElapsedTime();
+		BGM.play();
 
 		switch (State)
 		{
@@ -544,8 +565,8 @@ int main()
 			{
 				if (squareSpeed2 < 2)
 					squareSpeed2 += 0.05f;
-				SquarePos2.x += (xR2 / 100) * squareSpeed1;
-				SquarePos2.y += (yR2 / 100) * squareSpeed1;
+				SquarePos2.x += (xR2 / 100) * squareSpeed2;
+				SquarePos2.y += (yR2 / 100) * squareSpeed2;
 				tank2Dir = Vector2f(xR2, yR2);
 			}
 			else
@@ -560,6 +581,8 @@ int main()
 				Animation *shot1 = new Animation(animName::Shot, Objects[0], LastCible[0]);
 				AnimTab.push_back(shot1);
 				Objects[0]->sprite->setPosition(Pos1.x - cos(LastCible[0]) * 5, Pos1.y - sin(LastCible[0]) * 5);
+				//SFX.setBuffer(ShotSound);
+				//SFX.play();
 			}
 			else if ((-10 < Trig1 && Trig1 < 10) && Fire1 && !Objects[0]->destroyed)
 			{
@@ -579,6 +602,8 @@ int main()
 				Animation *shot2 = new Animation(animName::Shot, Objects[1], LastCible[1]);
 				AnimTab.push_back(shot2);
 				Objects[1]->sprite->setPosition(Pos2.x - cos(LastCible[1]) * 5, Pos2.y - sin(LastCible[1]) * 5);
+				//SFX.setBuffer(ShotSound);
+				//SFX.play();
 			}
 			else if ((-80 < Trig2 < 80) && Fire2 && !Objects[1]->destroyed)
 			{
@@ -602,10 +627,13 @@ int main()
 				case 0:
 					if (Objects[i]->playable && Objects[i]->Life != 0)
 					{
-						//Objects[i]->sprite->setRotation(atan2(tank1Dir.y, tank1Dir.x) * (180 / PI)); //Pb de collisions avec rotation
+						Objects[i]->sprite->setRotation(atan2(tank1Dir.y, tank1Dir.x) * (180 / PI)); //Pb de collisions avec rotation non opti
 						Objects[i]->sprite->setPosition(SquarePos1.x, SquarePos1.y);
 						drawCible(window, xL1, yL1, i);
-						Objects[i]->box = Objects[i]->sprite->getGlobalBounds();
+						Objects[i]->box.top = Objects[i]->sprite->getPosition().y - 20;
+						Objects[i]->box.left = Objects[i]->sprite->getPosition().x - 20;
+						Objects[i]->box.height = 40;
+						Objects[i]->box.width = 40;
 					}
 
 					break;
@@ -613,10 +641,13 @@ int main()
 				case 1:
 					if (Objects[i]->playable && Objects[i]->Life != 0)
 					{
-						//Objects[i]->sprite->setRotation(atan2(tank2Dir.y, tank2Dir.x) * (180 / PI)); //Pb de collisions avec rotation
+						Objects[i]->sprite->setRotation(atan2(tank2Dir.y, tank2Dir.x) * (180 / PI)); //Pb de collisions avec rotation non opti
 						Objects[1]->sprite->setPosition(SquarePos2.x, SquarePos2.y);
 						drawCible(window, xL2, yL2, i);
-						Objects[i]->box = Objects[i]->sprite->getGlobalBounds();
+						Objects[i]->box.top = Objects[i]->sprite->getPosition().y - 20;
+						Objects[i]->box.left = Objects[i]->sprite->getPosition().x - 20;
+						Objects[i]->box.height = 40;
+						Objects[i]->box.width = 40;
 					}
 					break;
 
@@ -639,13 +670,14 @@ int main()
 						SquarePos1 = LastPos[0];
 						Objects[0]->sprite->setPosition(LastPos[0]);
 						Objects[0]->sprite->setRotation(LastRot[0]);
-						Objects[0]->box = Objects[0]->sprite->getGlobalBounds();
 					}
 					else 						//Cas: Tank vs Proj
 					{
 						InitImpact(Objects[i]);
 						Animation *hit = new Animation(animName::Hit, Objects[i], LastCible[0]);
 						AnimTab.push_back(hit);
+						//SFX.setBuffer(HitSound);
+						//SFX.play();
 						if (!Objects[0]->hitted)
 						{
 							shake = true;
@@ -666,6 +698,8 @@ int main()
 								AnimTab.push_back(boom);
 								Objects[0]->Destroyed(Objects, 0);
 								Fire1 = true;
+								//SFX.setBuffer(ExplosionSound);
+								//SFX.play();
 							}
 						}
 						Objects.erase(Objects.begin() + i);
@@ -679,12 +713,15 @@ int main()
 					{
 						SquarePos2 = LastPos[1];
 						Objects[1]->sprite->setPosition(LastPos[1]);
+						Objects[1]->sprite->setRotation(LastRot[1]);
 					}
 					else						//Cas: Tank vs Proj
 					{
 						InitImpact(Objects[i]);
 						Animation *hit = new Animation(animName::Hit, Objects[i], LastCible[0]);
 						AnimTab.push_back(hit);
+						//SFX.setBuffer(HitSound);
+						//SFX.play();
 						if (!Objects[1]->hitted)
 						{
 							shake = true;
@@ -705,6 +742,8 @@ int main()
 								AnimTab.push_back(boom);
 								Objects[1]->Destroyed(Objects, 1);
 								Fire2 = true;
+								//SFX.setBuffer(ExplosionSound);
+								//SFX.play();
 							}
 						}
 						Objects.erase(Objects.begin() + i);
@@ -721,6 +760,8 @@ int main()
 							Projectile * proj = dynamic_cast<Projectile*>(Objects[i]);
 							if (proj->Bounced || Objects[j]->destroyable)
 							{
+								//SFX.setBuffer(HitSound);
+								//SFX.play();
 								InitImpact(Objects[i]);
 								Animation *hit = new Animation(animName::Hit, Objects[i], LastCible[0]);
 								AnimTab.push_back(hit);
@@ -729,6 +770,10 @@ int main()
 									Objects.erase(Objects.begin() + j);
 							}
 							else
+							{
+								//SFX.setBuffer(BounceSound);
+								//SFX.play();
+							}
 								proj->Rebond(Objects[j]);
 							break;
 						}
