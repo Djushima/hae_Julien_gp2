@@ -155,9 +155,7 @@ void initMap() {
 	switch (seed){
 	case 0:
 	{
-		auto Wall = new Entity(initSquareRender(150, 150), Vector2f(640, 360));
-		Wall->sprite->setRotation(45);
-		Wall->sprite->setOrigin(75, 75);
+		auto Wall = new Entity(initSquareRender(150, 150), Vector2f(565, 285));
 		Wall->sprite->setTexture(WallTex);
 		Wall->sprite->setOutlineThickness(1);
 		Wall->sprite->setOutlineColor(sf::Color::Black);
@@ -169,35 +167,34 @@ void initMap() {
 	{
 		for (int i = 0; i < 7; i++)
 		{
-			auto Wall = new Entity(initSquareRender(100, 100), Vector2f(640, 360));
-			Wall->sprite->setOrigin(50, 50);
+			auto Wall = new Entity(initSquareRender(100, 100), Vector2f(590, 310));
 			Wall->sprite->setTexture(WallTex);
 			Wall->sprite->setOutlineThickness(1);
 			Wall->sprite->setOutlineColor(sf::Color::Black);
 			switch (i)
 			{
 			case 1:
-				Wall->sprite->setPosition(320, 360);
+				Wall->sprite->setPosition(270, 310);
 				break;
 
 			case 2:
-				Wall->sprite->setPosition(960, 360);
+				Wall->sprite->setPosition(910, 310);
 				break;
 
 			case 3:
-				Wall->sprite->setPosition(480, 200);
+				Wall->sprite->setPosition(430, 150);
 				break;
 
 			case 4:
-				Wall->sprite->setPosition(800, 200);
+				Wall->sprite->setPosition(750, 150);
 				break;
 
 			case 5:
-				Wall->sprite->setPosition(800, 520);
+				Wall->sprite->setPosition(750, 470);
 				break;
 
 			case 6:
-				Wall->sprite->setPosition(480, 520);
+				Wall->sprite->setPosition(430, 470);
 				break;
 
 			default:
@@ -215,8 +212,7 @@ void initMap() {
 			for (int j = 0; j < 4; j++)
 			{
 				auto Wall = new Entity(initSquareRender(50, 50), Vector2f(640, 360));
-				Wall->sprite->setOrigin(25, 25);
-				Wall->sprite->setPosition(i * 236 +168, j * 155+127);
+				Wall->sprite->setPosition(i * 236 +143, j * 155+103);
 				Wall->sprite->setTexture(WallTex);
 				Wall->sprite->setOutlineThickness(1);
 				Wall->sprite->setOutlineColor(sf::Color::Black);
@@ -232,12 +228,11 @@ void initMap() {
 	{
 		auto DestructWall = new Entity(initSquareRender(25, 25), Vector2f(640, 360));
 		DestructWall->destroyable = true;
-		DestructWall->sprite->setOrigin(12.5, 12.5);
 		DestructWall->sprite->setTexture(WoodTex);
 		DestructWall->sprite->setOutlineThickness(1);
 		DestructWall->sprite->setOutlineColor(sf::Color::Black);
 	restart:
-		DestructWall->sprite->setPosition(rand() % 1180 + 50, rand() % 620 + 50);
+		DestructWall->sprite->setPosition(rand() % 1180 + 100, rand() % 620 + 100);
 		DestructWall->box = DestructWall->sprite->getGlobalBounds();
 		for (int j = 0; j < Objects.size(); j++)
 		{
@@ -466,7 +461,7 @@ int main()
 			{
 				if (event.type == sf::Event::KeyReleased)
 				{
-					if (event.key.code == sf::Keyboard::R && EndGame) {
+					if (event.key.code == sf::Keyboard::R /*&& EndGame*/) { //Attention, enlever com dans release.
 						EndGame = false;
 						Objects.clear();
 						LifeTab.clear();
@@ -518,6 +513,19 @@ int main()
 					window.close();
 			}
 
+			if (Objects[0]->Life != 0)
+			{
+				LastPos[0] = Objects[0]->sprite->getPosition();
+				LastRot[0] = Objects[0]->sprite->getRotation();
+			}
+			if (Objects[1]->Life != 0)
+			{
+				LastRot[1] = Objects[1]->sprite->getRotation();
+				LastPos[1] = Objects[1]->sprite->getPosition();
+			}
+
+
+
 			if (xR1 > 20 || xR1 < -20 || yR1 > 20 || yR1 < -20) //Mouvement J1
 			{
 				if (squareSpeed1 < 2)
@@ -554,17 +562,12 @@ int main()
 			else if ((-10 < Trig1 && Trig1 < 10) && Fire1 && !Objects[0]->destroyed)
 			{
 				FireCount1++;
-				if (FireCount1 >= 25)
+				if (FireCount1 >= 15)
 				{
 					Fire1 = false;
 					FireCount1 = 0;
 				}
 			}
-
-			window.clear();
-			drawMap(window);
-			window.draw(EndText);
-			drawGameUi(window);
 
 			if ((Trig2 > 80 || Trig2 < -80) && !Fire2) //Shoot J2
 			{
@@ -578,38 +581,39 @@ int main()
 			else if ((-80 < Trig2 < 80) && Fire2 && !Objects[1]->destroyed)
 			{
 				FireCount2++;
-				if (FireCount2 >= 25)
+				if (FireCount2 >= 15)
 				{
 					Fire2 = false;
 					FireCount2 = 0;
 				}
 			}
 
+			window.clear();
+			drawMap(window);
+			window.draw(EndText);
+			drawGameUi(window);
+
 			for (int i = 0; i < 2; i++)
 			{
 				switch (i)
 				{
 				case 0:
-					if (Objects[i]->playable && Objects[i]->sprite != nullptr)
+					if (Objects[i]->playable && Objects[i]->Life != 0)
 					{
-						Objects[i]->sprite->setRotation(atan2(tank1Dir.y, tank1Dir.x) * (180 / PI));
-						LastRot[i] = Objects[i]->sprite->getRotation();
+						//Objects[i]->sprite->setRotation(atan2(tank1Dir.y, tank1Dir.x) * (180 / PI)); //Pb de collisions avec rotation
 						Objects[i]->sprite->setPosition(SquarePos1.x, SquarePos1.y);
 						drawCible(window, xL1, yL1, i);
-						LastPos[i] = Objects[i]->sprite->getPosition();
 						Objects[i]->box = Objects[i]->sprite->getGlobalBounds();
 					}
 
 					break;
 
 				case 1:
-					if (Objects[i]->playable && Objects[i]->sprite != nullptr)
+					if (Objects[i]->playable && Objects[i]->Life != 0)
 					{
-						Objects[i]->sprite->setRotation(atan2(tank2Dir.y, tank2Dir.x) * (180 / PI));
-						LastRot[i] = Objects[i]->sprite->getRotation();
+						//Objects[i]->sprite->setRotation(atan2(tank2Dir.y, tank2Dir.x) * (180 / PI)); //Pb de collisions avec rotation
 						Objects[1]->sprite->setPosition(SquarePos2.x, SquarePos2.y);
 						drawCible(window, xL2, yL2, i);
-						LastPos[i] = Objects[i]->sprite->getPosition();
 						Objects[i]->box = Objects[i]->sprite->getGlobalBounds();
 					}
 					break;
@@ -630,7 +634,6 @@ int main()
 				{
 					if (!Objects[i]->movable || Objects[i]->playable)	//Cas: Tank1 vs Wall
 					{
-						printf("Contact");
 						SquarePos1 = LastPos[0];
 						Objects[0]->sprite->setPosition(LastPos[0]);
 					}
